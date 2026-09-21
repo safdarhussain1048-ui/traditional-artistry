@@ -109,9 +109,14 @@
     </div>
   </div>
 
-  <script src="js/config.js"></script>
   <script>
-    // Check auth on load
+    // ========== SUPABASE CONFIG ==========
+    const SUPABASE_URL = 'https://vgjmgbnflyxzpfxqizcz.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnam1nYm5mbHl4enBmeHFpemN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NjM5NjEsImV4cCI6MjEwNTUzOTk2MX0.uzqYMlTllj_0yHJ_Yjpe4yCPUfWY5ZetlQP_71zDlMc';
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ========== CHECK AUTH ==========
     async function checkAuth() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
@@ -122,7 +127,7 @@
     }
     checkAuth();
 
-    // Login
+    // ========== LOGIN ==========
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const email = document.getElementById('login-email').value;
@@ -140,13 +145,13 @@
       }
     });
 
-    // Logout
+    // ========== LOGOUT ==========
     document.getElementById('logout-btn').addEventListener('click', async () => {
       await supabase.auth.signOut();
       location.reload();
     });
 
-    // Auto calculate total
+    // ========== AUTO CALCULATE TOTAL ==========
     document.getElementById('price').addEventListener('input', calcTotal);
     document.getElementById('tcs_cost').addEventListener('input', calcTotal);
     function calcTotal() {
@@ -155,7 +160,7 @@
       document.getElementById('total_price').value = price + tcs;
     }
 
-    // Add Product
+    // ========== ADD PRODUCT ==========
     document.getElementById('product-form').addEventListener('submit', async (e) => {
       e.preventDefault();
       const btn = document.getElementById('submit-btn');
@@ -207,7 +212,7 @@
       }
     });
 
-    // Load existing products
+    // ========== LOAD PRODUCTS ==========
     async function loadAdminProducts() {
       const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
       const list = document.getElementById('products-list');
