@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel – Traditional Artistry Work</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Poppins', sans-serif; }
+    .form-input { width:100%; padding:0.75rem 1rem; border:1.5px solid #E5E0D5; border-radius:0.75rem; background:#FFFBF5; }
+    .form-input:focus { outline:none; border-color:#C9A227; box-shadow:0 0 0 3px rgba(201,162,39,0.2); }
+  </style>
+</head>
+<body class="bg-amber-50 min-h-screen">
+
+  <!-- Login Screen -->
+  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+      <h1 class="text-2xl font-bold text-red-900 mb-2 text-center">Admin Panel</h1>
+      <p class="text-gray-600 text-center mb-6">Traditional Artistry Work</p>
+      <form id="login-form" class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Email</label>
+          <input type="email" id="login-email" required class="form-input" placeholder="your@email.com">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Password</label>
+          <input type="password" id="login-password" required class="form-input" placeholder="••••••••">
+        </div>
+        <button type="submit" class="w-full py-3 bg-red-800 text-white font-semibold rounded-xl hover:bg-red-900">Login</button>
+        <p id="login-error" class="text-red-600 text-sm text-center hidden"></p>
+      </form>
+    </div>
+  </div>
+
+  <!-- Admin Dashboard -->
+  <div id="admin-screen" class="hidden">
+    <header class="bg-red-900 text-white p-4 flex justify-between items-center">
+      <h1 class="text-xl font-bold">Admin – Add Products</h1>
+      <div class="flex gap-4 items-center">
+        <a href="index.html" target="_blank" class="text-sm underline">View Website</a>
+        <button id="logout-btn" class="bg-white/20 px-4 py-2 rounded-lg text-sm hover:bg-white/30">Logout</button>
+      </div>
+    </header>
+
+    <div class="max-w-3xl mx-auto p-6">
+      <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
+        <h2 class="text-xl font-bold text-red-900 mb-6">Add New Product</h2>
+        <form id="product-form" class="space-y-5">
+          <div>
+            <label class="block text-sm font-medium mb-1">Product Name *</label>
+            <input type="text" id="name" required class="form-input" placeholder="e.g. Classic Balochi Embroidered Dress">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Category *</label>
+            <select id="category" required class="form-input">
+              <option value="balochi-clothes">Balochi Clothes</option>
+              <option value="cultural">Cultural Wear</option>
+              <option value="bags">Handmade Bags</option>
+              <option value="caps">Balochi Caps</option>
+              <option value="gifts">Gift Pens</option>
+              <option value="toys">Kids Toys</option>
+            </select>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="block text-sm font-medium mb-1">Price (Rs) *</label>
+              <input type="number" id="price" required min="0" step="1" class="form-input" placeholder="12500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">TCS Cost (Rs) *</label>
+              <input type="number" id="tcs_cost" required min="0" step="1" class="form-input" placeholder="300">
+            </div>
+            <div>
+              <label class="block text-sm font-medium mb-1">Total Price (Rs) *</label>
+              <input type="number" id="total_price" required min="0" step="1" class="form-input" placeholder="12800">
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Full Description *</label>
+            <textarea id="description" required rows="4" class="form-input" placeholder="Detailed description of the product..."></textarea>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Quality</label>
+            <input type="text" id="quality" class="form-input" placeholder="e.g. Premium hand-embroidered silk thread">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Badge (optional)</label>
+            <input type="text" id="badge" class="form-input" placeholder="Bestseller / New / Premium">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">Product Image *</label>
+            <input type="file" id="image" accept="image/*" required class="form-input">
+            <p class="text-xs text-gray-500 mt-1">Upload a clear photo of the product</p>
+          </div>
+          <button type="submit" id="submit-btn" class="w-full py-3 bg-red-800 text-white font-semibold rounded-xl hover:bg-red-900">
+            Add Product
+          </button>
+          <p id="form-msg" class="text-center text-sm hidden"></p>
+        </form>
+      </div>
+
+      <div class="mt-8 bg-white rounded-2xl shadow-lg p-6">
+        <h2 class="text-xl font-bold text-red-900 mb-4">Existing Products</h2>
+        <div id="products-list" class="space-y-3"></div>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script>
+    // Check auth on load
+    async function checkAuth() {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('admin-screen').classList.remove('hidden');
+        loadAdminProducts();
+      }
+    }
+    checkAuth();
+
+    // Login
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+      const errEl = document.getElementById('login-error');
+
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        errEl.textContent = error.message;
+        errEl.classList.remove('hidden');
+      } else {
+        document.getElementById('login-screen').classList.add('hidden');
+        document.getElementById('admin-screen').classList.remove('hidden');
+        loadAdminProducts();
+      }
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', async () => {
+      await supabase.auth.signOut();
+      location.reload();
+    });
+
+    // Auto calculate total
+    document.getElementById('price').addEventListener('input', calcTotal);
+    document.getElementById('tcs_cost').addEventListener('input', calcTotal);
+    function calcTotal() {
+      const price = Number(document.getElementById('price').value) || 0;
+      const tcs = Number(document.getElementById('tcs_cost').value) || 0;
+      document.getElementById('total_price').value = price + tcs;
+    }
+
+    // Add Product
+    document.getElementById('product-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      const msg = document.getElementById('form-msg');
+      btn.disabled = true;
+      btn.textContent = 'Uploading...';
+
+      try {
+        const file = document.getElementById('image').files[0];
+        if (!file) throw new Error('Please select an image');
+
+        const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, file);
+
+        if (uploadError) throw uploadError;
+
+        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(fileName);
+        const imageUrl = urlData.publicUrl;
+
+        const { error: insertError } = await supabase.from('products').insert({
+          name: document.getElementById('name').value,
+          category: document.getElementById('category').value,
+          price: Number(document.getElementById('price').value),
+          tcs_cost: Number(document.getElementById('tcs_cost').value),
+          total_price: Number(document.getElementById('total_price').value),
+          description: document.getElementById('description').value,
+          quality: document.getElementById('quality').value || null,
+          badge: document.getElementById('badge').value || null,
+          image_url: imageUrl,
+          is_active: true
+        });
+
+        if (insertError) throw insertError;
+
+        msg.textContent = '✅ Product added successfully!';
+        msg.className = 'text-center text-sm text-green-700';
+        msg.classList.remove('hidden');
+        document.getElementById('product-form').reset();
+        loadAdminProducts();
+      } catch (err) {
+        msg.textContent = 'Error: ' + err.message;
+        msg.className = 'text-center text-sm text-red-600';
+        msg.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Add Product';
+      }
+    });
+
+    // Load existing products
+    async function loadAdminProducts() {
+      const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      const list = document.getElementById('products-list');
+      if (!data || data.length === 0) {
+        list.innerHTML = '<p class="text-gray-500">No products yet. Add your first product above.</p>';
+        return;
+      }
+      list.innerHTML = data.map(p => `
+        <div class="flex items-center gap-4 p-3 border rounded-xl">
+          <img src="${p.image_url}" class="w-16 h-16 object-cover rounded-lg" onerror="this.style.display='none'">
+          <div class="flex-1">
+            <p class="font-semibold">${p.name}</p>
+            <p class="text-sm text-gray-600">Rs. ${Number(p.total_price).toLocaleString()} • ${p.category}</p>
+          </div>
+          <button onclick="deleteProduct(${p.id})" class="text-red-600 text-sm hover:underline">Delete</button>
+        </div>
+      `).join('');
+    }
+
+    async function deleteProduct(id) {
+      if (!confirm('Delete this product?')) return;
+      await supabase.from('products').delete().eq('id', id);
+      loadAdminProducts();
+    }
+    window.deleteProduct = deleteProduct;
+  </script>
+</body>
+</html>
