@@ -114,11 +114,11 @@
     const SUPABASE_URL = 'https://vgjmgbnflyxzpfxqizcz.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnam1nYm5mbHl4enBmeHFpemN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NjM5NjEsImV4cCI6MjEwNTUzOTk2MX0.uzqYMlTllj_0yHJ_Yjpe4yCPUfWY5ZetlQP_71zDlMc';
 
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // ========== CHECK AUTH ==========
     async function checkAuth() {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('admin-screen').classList.remove('hidden');
@@ -134,7 +134,7 @@
       const password = document.getElementById('login-password').value;
       const errEl = document.getElementById('login-error');
 
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
       if (error) {
         errEl.textContent = error.message;
         errEl.classList.remove('hidden');
@@ -147,7 +147,7 @@
 
     // ========== LOGOUT ==========
     document.getElementById('logout-btn').addEventListener('click', async () => {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       location.reload();
     });
 
@@ -173,16 +173,16 @@
         if (!file) throw new Error('Please select an image');
 
         const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-        const { error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabaseClient.storage
           .from('product-images')
           .upload(fileName, file);
 
         if (uploadError) throw uploadError;
 
-        const { data: urlData } = supabase.storage.from('product-images').getPublicUrl(fileName);
+        const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(fileName);
         const imageUrl = urlData.publicUrl;
 
-        const { error: insertError } = await supabase.from('products').insert({
+        const { error: insertError } = await supabaseClient.from('products').insert({
           name: document.getElementById('name').value,
           category: document.getElementById('category').value,
           price: Number(document.getElementById('price').value),
@@ -214,7 +214,7 @@
 
     // ========== LOAD PRODUCTS ==========
     async function loadAdminProducts() {
-      const { data } = await supabase.from('products').select('*').order('created_at', { ascending: false });
+      const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
       const list = document.getElementById('products-list');
       if (!data || data.length === 0) {
         list.innerHTML = '<p class="text-gray-500">No products yet. Add your first product above.</p>';
@@ -234,7 +234,7 @@
 
     async function deleteProduct(id) {
       if (!confirm('Delete this product?')) return;
-      await supabase.from('products').delete().eq('id', id);
+      await supabaseClient.from('products').delete().eq('id', id);
       loadAdminProducts();
     }
     window.deleteProduct = deleteProduct;
