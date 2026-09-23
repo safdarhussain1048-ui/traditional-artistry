@@ -543,19 +543,25 @@ function flash(sel, text, color) {
 function orderRevenue(o) { return (o.items||[]).reduce((a,i)=>a + Number(i.price||0)*Number(i.qty||0), 0); }
 
 // UPGRADED: Dynamically looks up current product cost if the order has 0 or missing cost
+// BULLETPROOF COST CALCULATION: Always uses the current product cost from Products tab
 function orderCost(o) { 
   return (o.items||[]).reduce((a,i) => {
-    let cost = Number(i.cost || 0);
+    let cost = 0;
     
-    // If cost is 0 in the order, look it up in the current products list
-    if (cost === 0 && i.product_id) {
-      const prod = DB.products.find(p => p.id === i.product_id);
-      if (prod) cost = Number(prod.cost_price || 0);
+    // Always force lookup the CURRENT cost by converting IDs to Numbers for a perfect match
+    if (i.product_id) {
+      const prod = DB.products.find(p => Number(p.id) === Number(i.product_id));
+      if (prod && Number(prod.cost_price) > 0) {
+        cost = Number(prod.cost_price);
+      }
     }
-    // Fallback: look up by name if product_id is missing
+    
+    // Fallback: look up by exact name if product_id is missing
     if (cost === 0 && i.name) {
        const prod = DB.products.find(p => p.name === i.name);
-       if (prod) cost = Number(prod.cost_price || 0);
+       if (prod && Number(prod.cost_price) > 0) {
+         cost = Number(prod.cost_price);
+       }
     }
     return a + (cost * Number(i.qty || 0));
   }, 0); 
