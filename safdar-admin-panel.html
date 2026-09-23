@@ -22,13 +22,11 @@
     <h1 class="text-2xl font-bold text-red-900 mb-1 text-center">Admin Panel</h1>
     <p class="text-gray-500 text-center mb-6 text-sm">Traditional Artistry Work</p>
 
-    <!-- Auth tabs -->
     <div class="flex border-b border-gray-200 mb-6">
       <button id="tab-login" class="flex-1 pb-2 font-semibold text-sm border-b-2 border-red-800 text-red-800">Login</button>
       <button id="tab-register" class="flex-1 pb-2 font-semibold text-sm border-b-2 border-transparent text-gray-500">Register</button>
     </div>
 
-    <!-- Login form -->
     <form id="login-form" class="space-y-4">
       <div>
         <label class="block text-sm font-medium mb-1">Email</label>
@@ -42,7 +40,6 @@
       <p id="login-error" class="text-red-600 text-sm text-center hidden"></p>
     </form>
 
-    <!-- Register form -->
     <form id="register-form" class="space-y-4 hidden">
       <div>
         <label class="block text-sm font-medium mb-1">Email</label>
@@ -58,7 +55,7 @@
       </div>
       <button type="submit" class="admin-btn admin-btn-primary w-full py-3">Create Admin Account</button>
       <p id="register-msg" class="text-sm text-center hidden"></p>
-      <p class="text-xs text-gray-500 text-center">Only people you trust should register. After signup, you may need to verify the email.</p>
+      <p class="text-xs text-gray-500 text-center">Only people you trust should register.</p>
     </form>
   </div>
 </div>
@@ -90,7 +87,6 @@
 
   <main class="p-3 md:p-6 max-w-7xl mx-auto pb-24">
 
-    <!-- ============ DASHBOARD ============ -->
     <section id="tab-dashboard" class="tab-panel">
       <div id="dash-kpis" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
       <div class="grid lg:grid-cols-3 gap-4 mb-5">
@@ -113,7 +109,6 @@
       </div>
     </section>
 
-    <!-- ============ PRODUCTS ============ -->
     <section id="tab-products" class="tab-panel hidden">
       <div class="admin-card mb-5">
         <h2 id="prod-form-title" class="text-lg font-bold text-red-900 mb-4">Add New Product</h2>
@@ -168,7 +163,6 @@
       </div>
     </section>
 
-    <!-- ============ ORDERS ============ -->
     <section id="tab-orders" class="tab-panel hidden">
       <div class="admin-card mb-4">
         <div class="flex flex-wrap gap-2 items-center">
@@ -187,7 +181,6 @@
       <div id="orders-list" class="space-y-4"></div>
     </section>
 
-    <!-- ============ PAYMENTS ============ -->
     <section id="tab-payments" class="tab-panel hidden">
       <div class="admin-card mb-4">
         <h2 class="text-lg font-bold text-red-900">💳 Advance Payment Verification</h2>
@@ -196,7 +189,6 @@
       <div id="payments-list" class="space-y-4"></div>
     </section>
 
-    <!-- ============ REVIEWS ============ -->
     <section id="tab-reviews" class="tab-panel hidden">
       <div class="admin-card mb-4 flex flex-wrap justify-between items-center gap-3">
         <h2 class="text-lg font-bold text-red-900">⭐ Customer Reviews</h2>
@@ -208,7 +200,6 @@
       <div id="reviews-list" class="space-y-3"></div>
     </section>
 
-    <!-- ============ EXPENSES ============ -->
     <section id="tab-expenses" class="tab-panel hidden">
       <div class="admin-card mb-5">
         <h2 class="text-lg font-bold text-red-900 mb-4">🧾 Add Expense</h2>
@@ -235,7 +226,6 @@
       </div>
     </section>
 
-    <!-- ============ STORES ============ -->
     <section id="tab-stores" class="tab-panel hidden">
       <div class="admin-card mb-5">
         <h2 class="text-lg font-bold text-red-900 mb-4">📍 Add Physical Store / Live Location</h2>
@@ -264,7 +254,6 @@
       <div id="locations-list" class="space-y-3"></div>
     </section>
 
-    <!-- ============ TICKER ============ -->
     <section id="tab-ticker" class="tab-panel hidden">
       <div class="admin-card mb-5">
         <h2 class="text-lg font-bold text-red-900 mb-4">📢 Running Line Messages</h2>
@@ -279,7 +268,6 @@
       <div id="ticker-list" class="space-y-2"></div>
     </section>
 
-    <!-- ============ SETTINGS ============ -->
     <section id="tab-settings" class="tab-panel hidden">
       <div class="admin-card">
         <h2 class="text-lg font-bold text-red-900 mb-4">⚙️ Store Settings</h2>
@@ -337,6 +325,16 @@ let currentOrderId = null;
 let sessionTimer = null;
 let lastActivity = Date.now();
 
+/* ============================================================
+   SAFETY FOOTER — appended to every outgoing WhatsApp message
+============================================================ */
+const WA_SAFETY_FOOTER = `
+
+━━━━━━━━━━━━━━━━━━━
+🔒 This message is from the OFFICIAL WhatsApp of Traditional Artistry Work (0333-3882131).
+If you received this from a DIFFERENT number, DO NOT PAY.
+Report to 0333-3882131 immediately.`;
+
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
@@ -348,7 +346,6 @@ const $$ = s => [...document.querySelectorAll(s)];
   if (session) enterAdmin(session);
 })();
 
-// Auth tab switching
 $('#tab-login').addEventListener('click', () => {
   $('#tab-login').classList.add('border-red-800','text-red-800');
   $('#tab-login').classList.remove('border-transparent','text-gray-500');
@@ -366,7 +363,6 @@ $('#tab-register').addEventListener('click', () => {
   $('#login-form').classList.add('hidden');
 });
 
-// Login
 $('#login-form').addEventListener('submit', async e => {
   e.preventDefault();
   const errEl = $('#login-error');
@@ -379,7 +375,6 @@ $('#login-form').addEventListener('submit', async e => {
   enterAdmin(data.session);
 });
 
-// Register
 $('#register-form').addEventListener('submit', async e => {
   e.preventDefault();
   const msgEl = $('#register-msg');
@@ -411,7 +406,6 @@ $('#register-form').addEventListener('submit', async e => {
   }
 });
 
-// Logout
 $('#logout-btn').addEventListener('click', async () => {
   await supabaseClient.auth.signOut();
   location.reload();
@@ -426,7 +420,7 @@ function enterAdmin(session) {
 }
 
 function startSessionTimeout() {
-  const TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 hours
+  const TIMEOUT_MS = 2 * 60 * 60 * 1000;
   ['mousemove','keydown','click','scroll'].forEach(evt =>
     document.addEventListener(evt, () => { lastActivity = Date.now(); }, { passive: true })
   );
@@ -437,7 +431,7 @@ function startSessionTimeout() {
       alert('Session expired due to inactivity. Please login again.');
       location.reload();
     }
-  }, 60_000); // check every minute
+  }, 60000);
 }
 
 /* ============================================================
@@ -524,6 +518,37 @@ const PAY_PILL = {
 
 function orderCode() { return 'TA-' + Date.now().toString(36).slice(-5).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase(); }
 
+function normPhone(p){
+  let d = String(p || '').replace(/\D/g,'');
+  if (d.startsWith('0')) d = '92' + d.slice(1);
+  else if (!d.startsWith('92') && d.length === 10) d = '92' + d;
+  return d;
+}
+function waLink(phone, msg){
+  return 'https://wa.me/' + normPhone(phone) + '?text=' + encodeURIComponent(msg);
+}
+
+/* ============================================================
+   WHATSAPP SENDER (with safety footer auto-appended)
+============================================================ */
+async function sendWhatsApp(phone, message){
+  const fullMsg = message + WA_SAFETY_FOOTER;
+  const url   = DB.settings.wa_api_url;
+  const token = DB.settings.wa_api_token;
+  if (url && token) {
+    try {
+      const res = await fetch(url, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ token, to: normPhone(phone), body: fullMsg })
+      });
+      if (res.ok) return { ok:true, auto:true };
+    } catch(e){ console.warn('WA API failed, falling back', e); }
+  }
+  window.open(waLink(phone, fullMsg), '_blank');
+  return { ok:true, auto:false };
+}
+
 /* ============================================================
    DASHBOARD
 ============================================================ */
@@ -540,13 +565,11 @@ function renderDashboard() {
   const awaitingPay = DB.orders.filter(o => o.payment_status === 'submitted').length;
   const pendingReviews = DB.reviews.filter(r => !r.is_approved).length;
 
-  // Badges
   const newOrders = DB.orders.filter(o => o.order_status === 'new').length;
-  const newPayments = awaitingPay;
   const ordersBadge = $('#tab-orders-badge');
   const payBadge = $('#tab-pay-badge');
   newOrders ? (ordersBadge.textContent = newOrders, ordersBadge.classList.remove('hidden')) : ordersBadge.classList.add('hidden');
-  newPayments ? (payBadge.textContent = newPayments, payBadge.classList.remove('hidden')) : payBadge.classList.add('hidden');
+  awaitingPay ? (payBadge.textContent = awaitingPay, payBadge.classList.remove('hidden')) : payBadge.classList.add('hidden');
 
   $('#dash-kpis').innerHTML = `
     <div class="admin-kpi"><div class="kpi-value">${visitsToday}</div><div class="kpi-label">Visitors Today</div></div>
@@ -559,7 +582,6 @@ function renderDashboard() {
     <div class="admin-kpi" style="border-left-color:#9333ea"><div class="kpi-value" style="color:#9333ea">${pendingReviews}</div><div class="kpi-label">Reviews Pending</div></div>
   `;
 
-  // Chart
   const days = [];
   for (let i = 6; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
@@ -574,7 +596,6 @@ function renderDashboard() {
       <span class="text-[10px] text-gray-500 font-semibold">${d.label}</span>
     </div>`).join('');
 
-  // Top products
   const sales = {};
   active.forEach(o => (o.items||[]).forEach(it => {
     const k = it.name || 'Unknown';
@@ -592,7 +613,6 @@ function renderDashboard() {
       </div>
     </div>`).join('') : '<p class="text-gray-400 text-xs">No sales yet.</p>';
 
-  // Profit
   $('#dash-profit').innerHTML = `
     <div class="profit-box profit-revenue"><div class="pb-label">Gross Revenue</div><div class="pb-value">${money(revenue)}</div></div>
     <div class="profit-box profit-cost"><div class="pb-label">Mfg. Cost</div><div class="pb-value">− ${money(prodCost)}</div></div>
@@ -600,7 +620,6 @@ function renderDashboard() {
     <div class="profit-box profit-net ${netProfit<0?'negative':''}"><div class="pb-label">Net Profit</div><div class="pb-value">${money(netProfit)}</div></div>
   `;
 
-  // Recent orders
   const recent = DB.orders.slice(0,6);
   $('#dash-orders').innerHTML = recent.length ? `
     <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead>
@@ -771,8 +790,8 @@ function renderOrders() {
 
   box.innerHTML = list.map(o => {
     const advance = Number(o.advance_paid||0);
-    const balance = Number(o.total||0) - advance;
-    const isPaidFull = o.payment_status === 'verified' && balance <= 0;
+    const balance = Number(o.total||0) - advance - Number(o.balance_paid||0);
+    const isPaidFull = o.order_status === 'delivered' && balance <= 0;
     return `
     <div class="admin-card">
       <div class="flex flex-wrap justify-between items-start gap-3 mb-3">
@@ -959,7 +978,7 @@ Track here: https://www.tcsexpress.com/tracking?tracking_number=${tcs}
 
 Shukriya for shopping with us!
 Safdar Hussain — Traditional Artistry Work
-📞 0333-3882131`;
+📞 0333-3882131${WA_SAFETY_FOOTER}`;
 
   $('#confirm-body').innerHTML = `
     <h3 class="text-lg font-bold text-red-900 mb-3">🚚 Confirm Dispatch</h3>
@@ -1030,7 +1049,7 @@ function openMarkDelivered(id) {
   const o = DB.orders.find(x => x.id === id);
   if (!o) return;
   const advance = Number(o.advance_paid||0);
-  const balance = Number(o.total||0) - advance;
+  const balance = Number(o.total||0) - advance - Number(o.balance_paid||0);
   const isPrepaid = o.balance_method === 'prepaid';
 
   $('#confirm-body').innerHTML = `
@@ -1087,7 +1106,6 @@ async function confirmDelivery(id) {
     updated_at: new Date().toISOString()
   }).eq('id', id);
 
-  // WhatsApp receipt
   const receipt =
 `Assalam-o-Alaikum ${o.customer_name} 🌸
 
