@@ -7,109 +7,126 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/styles.css">
 <style>
-  body{font-family:'Poppins',sans-serif;background:#FFFBEB}
-  .form-input{width:100%;padding:.6rem .9rem;border:1.5px solid #E5E0D5;border-radius:.7rem;background:#FFFBF5;font-size:.85rem}
-  .form-input:focus{outline:none;border-color:#C9A227;box-shadow:0 0 0 3px rgba(201,162,39,.2)}
-  .tab-btn{padding:.6rem 1rem;font-size:.82rem;font-weight:600;color:#6B0F0F;white-space:nowrap;border-bottom:3px solid transparent;background:transparent}
-  .tab-btn.active{background:#fff;border-bottom-color:#9B1B1B;color:#9B1B1B}
-  .card{background:#fff;border-radius:1rem;box-shadow:0 4px 20px rgba(107,15,15,.07);padding:1.25rem}
-  .btn{padding:.55rem 1rem;border-radius:.7rem;font-weight:600;font-size:.8rem;transition:.15s}
-  .btn-red{background:#9B1B1B;color:#fff}.btn-red:hover{background:#6B0F0F}
-  .btn-green{background:#1A5F2A;color:#fff}.btn-green:hover{background:#134a20}
-  .btn-ghost{background:#F5E6C8;color:#6B0F0F}.btn-ghost:hover{background:#ecd9b0}
-  .lbl{display:block;font-size:.75rem;font-weight:600;color:#555;margin-bottom:.25rem}
-  .pill{padding:.2rem .6rem;border-radius:9999px;font-size:.68rem;font-weight:700;display:inline-block}
-  table{width:100%;font-size:.83rem;border-collapse:collapse}
-  th{text-align:left;padding:.5rem;color:#6B0F0F;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #F1EAD9}
-  td{padding:.55rem .5rem;border-top:1px solid #F6F1E4;vertical-align:middle}
-  .kpi{background:#fff;border-radius:1rem;padding:1rem;border-left:5px solid #C9A227;box-shadow:0 4px 18px rgba(107,15,15,.06)}
+  body { font-family: 'Poppins', sans-serif; background: #FFFBF5; }
 </style>
 </head>
 <body class="min-h-screen">
 
-<!-- ================= LOGIN ================= -->
+<!-- ============================================================
+     LOGIN / REGISTER SCREEN
+============================================================ -->
 <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
   <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
     <h1 class="text-2xl font-bold text-red-900 mb-1 text-center">Admin Panel</h1>
     <p class="text-gray-500 text-center mb-6 text-sm">Traditional Artistry Work</p>
+
+    <!-- Auth tabs -->
+    <div class="flex border-b border-gray-200 mb-6">
+      <button id="tab-login" class="flex-1 pb-2 font-semibold text-sm border-b-2 border-red-800 text-red-800">Login</button>
+      <button id="tab-register" class="flex-1 pb-2 font-semibold text-sm border-b-2 border-transparent text-gray-500">Register</button>
+    </div>
+
+    <!-- Login form -->
     <form id="login-form" class="space-y-4">
       <div>
-        <label class="lbl">Email</label>
-        <input type="email" id="login-email" required class="form-input" placeholder="your@email.com">
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input type="email" id="login-email" required class="admin-input" placeholder="your@email.com" autocomplete="off">
       </div>
       <div>
-        <label class="lbl">Password</label>
-        <input type="password" id="login-password" required class="form-input" placeholder="••••••••">
+        <label class="block text-sm font-medium mb-1">Password</label>
+        <input type="password" id="login-password" required class="admin-input" placeholder="••••••••" autocomplete="off">
       </div>
-      <button type="submit" class="w-full py-3 bg-red-800 text-white font-semibold rounded-xl hover:bg-red-900">Login</button>
+      <button type="submit" class="admin-btn admin-btn-primary w-full py-3">Login</button>
       <p id="login-error" class="text-red-600 text-sm text-center hidden"></p>
+    </form>
+
+    <!-- Register form -->
+    <form id="register-form" class="space-y-4 hidden">
+      <div>
+        <label class="block text-sm font-medium mb-1">Email</label>
+        <input type="email" id="register-email" required class="admin-input" placeholder="your@email.com">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Password</label>
+        <input type="password" id="register-password" required class="admin-input" placeholder="min 6 characters" minlength="6">
+      </div>
+      <div>
+        <label class="block text-sm font-medium mb-1">Confirm Password</label>
+        <input type="password" id="register-confirm" required class="admin-input" placeholder="repeat password" minlength="6">
+      </div>
+      <button type="submit" class="admin-btn admin-btn-primary w-full py-3">Create Admin Account</button>
+      <p id="register-msg" class="text-sm text-center hidden"></p>
+      <p class="text-xs text-gray-500 text-center">Only people you trust should register. After signup, you may need to verify the email.</p>
     </form>
   </div>
 </div>
 
-<!-- ================= ADMIN ================= -->
+<!-- ============================================================
+     ADMIN DASHBOARD
+============================================================ -->
 <div id="admin-screen" class="hidden">
-  <header class="bg-red-900 text-white px-4 py-3 flex justify-between items-center sticky top-0 z-40 shadow">
-    <h1 class="text-sm md:text-lg font-bold">Admin – Traditional Artistry Work</h1>
-    <div class="flex gap-3 items-center">
-      <a href="index.html" target="_blank" class="text-xs md:text-sm underline">View Website</a>
-      <button id="refresh-btn" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs md:text-sm hover:bg-white/30">↻ Refresh</button>
-      <button id="logout-btn" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs md:text-sm hover:bg-white/30">Logout</button>
+  <header class="bg-red-900 text-white px-3 md:px-5 py-3 flex justify-between items-center sticky top-0 z-40 shadow">
+    <h1 class="text-sm md:text-lg font-bold truncate">Admin Panel — Traditional Artistry Work</h1>
+    <div class="flex gap-2 items-center flex-shrink-0">
+      <a href="index.html" target="_blank" class="text-xs underline hidden sm:inline">View Website</a>
+      <button id="refresh-btn" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs hover:bg-white/30">↻</button>
+      <button id="logout-btn" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs hover:bg-white/30">Logout</button>
     </div>
   </header>
 
   <nav class="bg-amber-100 border-b border-amber-200 px-1 md:px-4 flex gap-1 overflow-x-auto sticky top-[52px] z-30">
-    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
-    <button class="tab-btn" data-tab="products">🛍 Products</button>
-    <button class="tab-btn" data-tab="orders">📦 Orders</button>
-    <button class="tab-btn" data-tab="payments">💳 Payments</button>
-    <button class="tab-btn" data-tab="reviews">⭐ Reviews</button>
-    <button class="tab-btn" data-tab="expenses">🧾 Expenses</button>
-    <button class="tab-btn" data-tab="locations">📍 Stores</button>
-    <button class="tab-btn" data-tab="ticker">📢 Ticker</button>
-    <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
+    <button class="admin-tab active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="admin-tab" data-tab="products">🛍 Products</button>
+    <button class="admin-tab" data-tab="orders">📦 Orders <span id="tab-orders-badge" class="hidden ml-1 bg-red-700 text-white text-[10px] px-1.5 rounded-full">0</span></button>
+    <button class="admin-tab" data-tab="payments">💳 Payments <span id="tab-pay-badge" class="hidden ml-1 bg-red-700 text-white text-[10px] px-1.5 rounded-full">0</span></button>
+    <button class="admin-tab" data-tab="reviews">⭐ Reviews</button>
+    <button class="admin-tab" data-tab="expenses">🧾 Expenses</button>
+    <button class="admin-tab" data-tab="stores">📍 Stores</button>
+    <button class="admin-tab" data-tab="ticker">📢 Ticker</button>
+    <button class="admin-tab" data-tab="settings">⚙️ Settings</button>
   </nav>
 
   <main class="p-3 md:p-6 max-w-7xl mx-auto pb-24">
 
-    <!-- ---------- DASHBOARD ---------- -->
+    <!-- ============ DASHBOARD ============ -->
     <section id="tab-dashboard" class="tab-panel">
       <div id="dash-kpis" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
       <div class="grid lg:grid-cols-3 gap-4 mb-5">
-        <div class="card lg:col-span-2">
+        <div class="admin-card lg:col-span-2">
           <h3 class="font-bold text-red-900 mb-4 text-sm">📈 Visitors – Last 7 Days</h3>
           <div id="dash-chart" class="flex items-end justify-between gap-2 h-44"></div>
         </div>
-        <div class="card">
+        <div class="admin-card">
           <h3 class="font-bold text-red-900 mb-4 text-sm">🏆 Top Selling Products</h3>
           <div id="dash-top" class="space-y-3 text-sm"></div>
         </div>
       </div>
-      <div class="card">
+      <div class="admin-card mb-5">
         <h3 class="font-bold text-red-900 mb-4 text-sm">🧮 Profit & Loss Summary</h3>
         <div id="dash-profit" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
       </div>
-      <div class="card mt-5">
+      <div class="admin-card">
         <h3 class="font-bold text-red-900 mb-4 text-sm">🕒 Recent Orders</h3>
-        <div class="overflow-x-auto"><table id="dash-orders"></table></div>
+        <div class="overflow-x-auto"><table class="admin-table" id="dash-orders"></table></div>
       </div>
     </section>
 
-    <!-- ---------- PRODUCTS ---------- -->
+    <!-- ============ PRODUCTS ============ -->
     <section id="tab-products" class="tab-panel hidden">
-      <div class="card mb-5">
+      <div class="admin-card mb-5">
         <h2 id="prod-form-title" class="text-lg font-bold text-red-900 mb-4">Add New Product</h2>
         <form id="product-form" class="space-y-4">
           <input type="hidden" id="prod-id">
           <div class="grid md:grid-cols-2 gap-4">
             <div>
-              <label class="lbl">Product Name *</label>
-              <input type="text" id="name" required class="form-input" placeholder="Classic Balochi Embroidered Dress">
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Product Name *</label>
+              <input type="text" id="name" required class="admin-input" placeholder="Classic Balochi Embroidered Dress">
             </div>
             <div>
-              <label class="lbl">Category *</label>
-              <select id="category" required class="form-input">
+              <label class="block text-xs font-semibold text-gray-600 mb-1">Category *</label>
+              <select id="category" required class="admin-input">
                 <option value="balochi-clothes">Balochi Clothes</option>
                 <option value="cultural">Cultural Wear</option>
                 <option value="bags">Handmade Bags</option>
@@ -120,43 +137,43 @@
             </div>
           </div>
           <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-            <div><label class="lbl">Price (Rs) *</label><input type="number" id="price" required min="0" class="form-input" placeholder="16500"></div>
-            <div><label class="lbl">Discount %</label><input type="number" id="discount_percent" min="0" max="90" value="0" class="form-input"></div>
-            <div><label class="lbl">TCS Cost (Rs)</label><input type="number" id="tcs_cost" min="0" value="300" class="form-input"></div>
-            <div><label class="lbl">Final Price (Rs) *</label><input type="number" id="total_price" required min="0" class="form-input"></div>
-            <div><label class="lbl">Cost / Mfg (Rs)</label><input type="number" id="cost_price" min="0" value="0" class="form-input"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Price (Rs) *</label><input type="number" id="price" required min="0" class="admin-input"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Discount %</label><input type="number" id="discount_percent" min="0" max="90" value="0" class="admin-input"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">TCS Cost</label><input type="number" id="tcs_cost" min="0" value="300" class="admin-input"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Final Price *</label><input type="number" id="total_price" required min="0" class="admin-input"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Cost / Mfg</label><input type="number" id="cost_price" min="0" value="0" class="admin-input"></div>
           </div>
           <p id="margin-hint" class="text-xs text-green-700 font-semibold"></p>
-          <div><label class="lbl">Full Description *</label><textarea id="description" required rows="4" class="form-input"></textarea></div>
-          <div class="grid md:grid-cols-3 gap-4">
-            <div><label class="lbl">Quality</label><input type="text" id="quality" class="form-input" placeholder="Premium hand-embroidered silk"></div>
-            <div><label class="lbl">Badge</label><input type="text" id="badge" class="form-input" placeholder="Bestseller / New / Premium"></div>
-            <div><label class="lbl">Stock Qty</label><input type="number" id="stock" min="0" value="10" class="form-input"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Full Description *</label><textarea id="description" required rows="3" class="admin-input"></textarea></div>
+          <div class="grid md:grid-cols-3 gap-3">
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Quality</label><input type="text" id="quality" class="admin-input"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Badge</label><input type="text" id="badge" class="admin-input" placeholder="Bestseller / New"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Stock Qty</label><input type="number" id="stock" min="0" value="10" class="admin-input"></div>
           </div>
           <div>
-            <label class="lbl">Product Image <span id="img-req" class="text-red-600">*</span></label>
-            <input type="file" id="image" accept="image/*" class="form-input">
-            <p class="text-xs text-gray-500 mt-1">Leave empty when editing to keep the current image.</p>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Product Image <span id="img-req" class="text-red-600">*</span></label>
+            <input type="file" id="image" accept="image/*" class="admin-input">
+            <p class="text-xs text-gray-500 mt-1">Leave empty when editing to keep current image.</p>
           </div>
           <div class="flex gap-3">
-            <button type="submit" id="submit-btn" class="btn btn-red flex-1 py-3">Add Product</button>
-            <button type="button" id="cancel-edit" class="btn btn-ghost px-6 hidden">Cancel</button>
+            <button type="submit" id="submit-btn" class="admin-btn admin-btn-primary flex-1 py-3">Add Product</button>
+            <button type="button" id="cancel-edit" class="admin-btn admin-btn-ghost px-6 hidden">Cancel</button>
           </div>
           <p id="form-msg" class="text-center text-sm hidden"></p>
         </form>
       </div>
-      <div class="card">
+      <div class="admin-card">
         <h2 class="text-lg font-bold text-red-900 mb-4">All Products (<span id="prod-count">0</span>)</h2>
-        <div class="overflow-x-auto"><table id="products-table"></table></div>
+        <div class="overflow-x-auto"><table class="admin-table" id="products-table"></table></div>
       </div>
     </section>
 
-    <!-- ---------- ORDERS ---------- -->
+    <!-- ============ ORDERS ============ -->
     <section id="tab-orders" class="tab-panel hidden">
-      <div class="card mb-4">
+      <div class="admin-card mb-4">
         <div class="flex flex-wrap gap-2 items-center">
-          <input id="order-search" class="form-input max-w-xs" placeholder="Search order code / name / phone">
-          <select id="order-filter" class="form-input max-w-[180px]">
+          <input id="order-search" class="admin-input max-w-xs" placeholder="Search code / name / phone">
+          <select id="order-filter" class="admin-input max-w-[180px]">
             <option value="all">All Orders</option>
             <option value="new">New</option>
             <option value="confirmed">Confirmed</option>
@@ -170,201 +187,288 @@
       <div id="orders-list" class="space-y-4"></div>
     </section>
 
-    <!-- ---------- PAYMENTS ---------- -->
+    <!-- ============ PAYMENTS ============ -->
     <section id="tab-payments" class="tab-panel hidden">
-      <div class="card mb-4">
+      <div class="admin-card mb-4">
         <h2 class="text-lg font-bold text-red-900">💳 Advance Payment Verification</h2>
-        <p class="text-xs text-gray-500 mt-1">Verify the customer's 50% advance screenshot before dispatching via TCS.</p>
+        <p class="text-xs text-gray-500 mt-1">Verify customer advance screenshots before dispatching via TCS.</p>
       </div>
       <div id="payments-list" class="space-y-4"></div>
     </section>
 
-    <!-- ---------- REVIEWS ---------- -->
+    <!-- ============ REVIEWS ============ -->
     <section id="tab-reviews" class="tab-panel hidden">
-      <div class="card mb-4 flex flex-wrap justify-between items-center gap-3">
+      <div class="admin-card mb-4 flex flex-wrap justify-between items-center gap-3">
         <h2 class="text-lg font-bold text-red-900">⭐ Customer Reviews</h2>
         <div class="flex gap-2 text-xs">
-          <span class="pill bg-yellow-100 text-yellow-800">Pending: <b id="rev-pending">0</b></span>
-          <span class="pill bg-green-100 text-green-800">Approved: <b id="rev-approved">0</b></span>
+          <span class="pill pill-submitted">Pending: <b id="rev-pending">0</b></span>
+          <span class="pill pill-verified">Approved: <b id="rev-approved">0</b></span>
         </div>
       </div>
       <div id="reviews-list" class="space-y-3"></div>
     </section>
 
-    <!-- ---------- EXPENSES ---------- -->
+    <!-- ============ EXPENSES ============ -->
     <section id="tab-expenses" class="tab-panel hidden">
-      <div class="card mb-5">
+      <div class="admin-card mb-5">
         <h2 class="text-lg font-bold text-red-900 mb-4">🧾 Add Expense</h2>
         <form id="expense-form" class="grid md:grid-cols-5 gap-3 items-end">
-          <div class="md:col-span-2"><label class="lbl">Title *</label><input id="exp-title" required class="form-input" placeholder="Thread purchase"></div>
-          <div><label class="lbl">Category</label>
-            <select id="exp-category" class="form-input">
+          <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">Title *</label><input id="exp-title" required class="admin-input"></div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Category</label>
+            <select id="exp-category" class="admin-input">
               <option>Raw Material</option><option>Packaging</option><option>Shipping/TCS</option>
               <option>Marketing</option><option>Salary</option><option>Utilities</option><option>Other</option>
             </select>
           </div>
-          <div><label class="lbl">Amount (Rs) *</label><input id="exp-amount" type="number" min="0" required class="form-input"></div>
-          <div><label class="lbl">Date</label><input id="exp-date" type="date" class="form-input"></div>
-          <div class="md:col-span-5"><button class="btn btn-red w-full py-3">Add Expense</button></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Amount (Rs) *</label><input id="exp-amount" type="number" min="0" required class="admin-input"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Date</label><input id="exp-date" type="date" class="admin-input"></div>
+          <div class="md:col-span-5"><button class="admin-btn admin-btn-primary w-full py-3">Add Expense</button></div>
         </form>
       </div>
-      <div class="card">
+      <div class="admin-card">
         <div class="flex justify-between items-center mb-4">
           <h2 class="text-lg font-bold text-red-900">Expense Records</h2>
           <span class="text-sm font-bold text-red-800">Total: <span id="exp-total">Rs. 0</span></span>
         </div>
-        <div class="overflow-x-auto"><table id="expenses-table"></table></div>
+        <div class="overflow-x-auto"><table class="admin-table" id="expenses-table"></table></div>
       </div>
     </section>
 
-    <!-- ---------- LOCATIONS ---------- -->
-    <section id="tab-locations" class="tab-panel hidden">
-      <div class="card mb-5">
+    <!-- ============ STORES ============ -->
+    <section id="tab-stores" class="tab-panel hidden">
+      <div class="admin-card mb-5">
         <h2 class="text-lg font-bold text-red-900 mb-4">📍 Add Physical Store / Live Location</h2>
         <form id="location-form" class="space-y-3">
           <input type="hidden" id="loc-id">
           <div class="grid md:grid-cols-2 gap-3">
-            <div><label class="lbl">Store Name *</label><input id="loc-name" required class="form-input" placeholder="Traditional Artistry Work – Main Store"></div>
-            <div><label class="lbl">City</label><input id="loc-city" class="form-input" placeholder="Kohlu"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Store Name *</label><input id="loc-name" required class="admin-input"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">City</label><input id="loc-city" class="admin-input"></div>
           </div>
-          <div><label class="lbl">Full Address</label><input id="loc-address" class="form-input" placeholder="Manjhara, Tehsil Mawand, District Kohlu, Balochistan"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Full Address</label><input id="loc-address" class="admin-input"></div>
           <div class="grid md:grid-cols-2 gap-3">
-            <div><label class="lbl">Phone / WhatsApp</label><input id="loc-phone" class="form-input" placeholder="0333-3882131"></div>
-            <div><label class="lbl">Opening Hours</label><input id="loc-hours" class="form-input" placeholder="Mon–Sat: 9:00 AM – 8:00 PM"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Phone / WhatsApp</label><input id="loc-phone" class="admin-input"></div>
+            <div><label class="block text-xs font-semibold text-gray-600 mb-1">Opening Hours</label><input id="loc-hours" class="admin-input" placeholder="Mon–Sat 9AM–8PM"></div>
           </div>
-          <div><label class="lbl">Google Maps Embed URL</label>
-            <input id="loc-map" class="form-input" placeholder="https://www.google.com/maps/embed?pb=...">
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Google Maps Embed URL</label>
+            <input id="loc-map" class="admin-input" placeholder="https://www.google.com/maps/embed?pb=...">
             <p class="text-xs text-gray-500 mt-1">Google Maps → Share → Embed a map → copy the <b>src</b> link only.</p>
           </div>
-          <div><label class="lbl">Google Maps Direction Link</label><input id="loc-link" class="form-input" placeholder="https://maps.app.goo.gl/..."></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Google Maps Direction Link</label><input id="loc-link" class="admin-input" placeholder="https://maps.app.goo.gl/..."></div>
           <div class="flex gap-3">
-            <button class="btn btn-red flex-1 py-3">Save Store</button>
-            <button type="button" id="loc-cancel" class="btn btn-ghost px-6 hidden">Cancel</button>
+            <button class="admin-btn admin-btn-primary flex-1 py-3">Save Store</button>
+            <button type="button" id="loc-cancel" class="admin-btn admin-btn-ghost px-6 hidden">Cancel</button>
           </div>
         </form>
       </div>
       <div id="locations-list" class="space-y-3"></div>
     </section>
 
-    <!-- ---------- TICKER ---------- -->
+    <!-- ============ TICKER ============ -->
     <section id="tab-ticker" class="tab-panel hidden">
-      <div class="card mb-5">
-        <h2 class="text-lg font-bold text-red-900 mb-4">📢 Running Line Messages (Top Bar)</h2>
+      <div class="admin-card mb-5">
+        <h2 class="text-lg font-bold text-red-900 mb-4">📢 Running Line Messages</h2>
         <form id="ticker-form" class="flex flex-col md:flex-row gap-3">
           <input type="hidden" id="tick-id">
-          <input id="tick-message" required class="form-input flex-1" placeholder="✨ Handmade with love in Balochistan – 100% authentic craftsmanship">
-          <input id="tick-order" type="number" value="0" class="form-input max-w-[110px]" placeholder="Order">
-          <button class="btn btn-red px-6">Save</button>
-          <button type="button" id="tick-cancel" class="btn btn-ghost px-4 hidden">Cancel</button>
+          <input id="tick-message" required class="admin-input flex-1" placeholder="✨ Handmade with love in Balochistan">
+          <input id="tick-order" type="number" value="0" class="admin-input max-w-[110px]" placeholder="Order">
+          <button class="admin-btn admin-btn-primary px-6">Save</button>
+          <button type="button" id="tick-cancel" class="admin-btn admin-btn-ghost px-4 hidden">Cancel</button>
         </form>
-        <p class="text-xs text-gray-500 mt-2">These messages scroll continuously across the top of your website.</p>
       </div>
       <div id="ticker-list" class="space-y-2"></div>
     </section>
 
-    <!-- ---------- SETTINGS ---------- -->
+    <!-- ============ SETTINGS ============ -->
     <section id="tab-settings" class="tab-panel hidden">
-      <div class="card">
+      <div class="admin-card">
         <h2 class="text-lg font-bold text-red-900 mb-4">⚙️ Store Settings</h2>
         <form id="settings-form" class="grid md:grid-cols-2 gap-4">
-          <div><label class="lbl">Advance Payment % (required before delivery)</label><input id="set_advance_percent" type="number" min="0" max="100" class="form-input" placeholder="50"></div>
-          <div><label class="lbl">Business WhatsApp Number</label><input id="set_whatsapp_number" class="form-input" placeholder="923333882131"></div>
-          <div><label class="lbl">JazzCash Number</label><input id="set_payment_jazzcash" class="form-input" placeholder="0333-3882131"></div>
-          <div><label class="lbl">EasyPaisa Number</label><input id="set_payment_easypaisa" class="form-input" placeholder="0333-3882131"></div>
-          <div><label class="lbl">Bank Name & Account</label><input id="set_payment_bank" class="form-input" placeholder="HBL – 1234 5678 9012 3456"></div>
-          <div><label class="lbl">Account Title</label><input id="set_payment_title" class="form-input" placeholder="Safdar Hussain"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Advance Payment % (before delivery)</label><input id="set_advance_percent" type="number" min="0" max="100" class="admin-input" placeholder="50"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Business WhatsApp (orders)</label><input id="set_whatsapp_number" class="admin-input" placeholder="923333882131"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">JazzCash Number</label><input id="set_payment_jazzcash" class="admin-input"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">EasyPaisa Number</label><input id="set_payment_easypaisa" class="admin-input"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Bank Name & Account</label><input id="set_payment_bank" class="admin-input"></div>
+          <div><label class="block text-xs font-semibold text-gray-600 mb-1">Account Title</label><input id="set_payment_title" class="admin-input"></div>
           <div class="md:col-span-2">
-            <label class="lbl">WhatsApp API Webhook (optional – for fully automatic sending)</label>
-            <input id="set_wa_api_url" class="form-input" placeholder="https://api.ultramsg.com/instanceXXXX/messages/chat">
-            <p class="text-xs text-gray-500 mt-1">Leave empty to use the free “click to send” WhatsApp method. With UltraMsg / WhatsApp Cloud API the message sends instantly with zero clicks.</p>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">WhatsApp API Webhook (optional — auto-send messages)</label>
+            <input id="set_wa_api_url" class="admin-input" placeholder="https://api.ultramsg.com/instanceXXXX/messages/chat">
+            <p class="text-xs text-gray-500 mt-1">Leave empty to use free click-to-send WhatsApp. With UltraMsg / WhatsApp Cloud API, messages send instantly.</p>
           </div>
-          <div class="md:col-span-2"><label class="lbl">WhatsApp API Token</label><input id="set_wa_api_token" class="form-input" placeholder="token"></div>
-          <div class="md:col-span-2"><button class="btn btn-red w-full py-3">Save Settings</button></div>
+          <div class="md:col-span-2"><label class="block text-xs font-semibold text-gray-600 mb-1">WhatsApp API Token</label><input id="set_wa_api_token" class="admin-input"></div>
+          <div class="md:col-span-2"><button class="admin-btn admin-btn-primary w-full py-3">Save Settings</button></div>
           <p id="settings-msg" class="md:col-span-2 text-center text-sm hidden"></p>
         </form>
+      </div>
+      <div class="admin-card mt-5">
+        <h2 class="text-lg font-bold text-red-900 mb-3">🔒 Security</h2>
+        <p class="text-sm text-gray-600">You are automatically logged out after <b>2 hours of inactivity</b>. For your safety, never share your admin credentials.</p>
+        <p class="text-xs text-gray-500 mt-2">Current session started: <span id="session-start"></span></p>
       </div>
     </section>
   </main>
 </div>
 
-<!-- Edit Order Modal -->
-<div id="order-modal" class="fixed inset-0 z-50 hidden">
-  <div class="absolute inset-0 bg-black/50" onclick="closeOrderModal()"></div>
+<!-- Order manage modal host -->
+<div id="order-modal" class="fixed inset-0 z-[60] hidden">
+  <div class="absolute inset-0 bg-black/60" onclick="closeOrderModal()"></div>
   <div class="absolute inset-0 flex items-start justify-center p-4 overflow-y-auto">
-    <div id="order-modal-body" class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8 p-6"></div>
+    <div id="order-modal-body" class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8 p-6 relative"></div>
   </div>
 </div>
 
+<!-- Confirm action modal host -->
+<div id="confirm-modal" class="fixed inset-0 z-[70] hidden">
+  <div class="absolute inset-0 bg-black/70"></div>
+  <div class="absolute inset-0 flex items-center justify-center p-4">
+    <div id="confirm-body" class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative"></div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
 <script>
 /* ============================================================
-   SUPABASE
+   STATE
 ============================================================ */
-const SUPABASE_URL = 'https://vgjmgbnflyxzpfxqizcz.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnam1nYm5mbHl4enBmeHFpemN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NjM5NjEsImV4cCI6MjEwNTUzOTk2MX0.uzqYMlTllj_0yHJ_Yjpe4yCPUfWY5ZetlQP_71zDlMc';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const DB = { products:[], orders:[], reviews:[], expenses:[], visits:[], locations:[], tickers:[], settings:{} };
+let editingProductId = null;
+let editingLocId = null;
+let currentOrderId = null;
+let sessionTimer = null;
+let lastActivity = Date.now();
 
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
-const money = n => 'Rs. ' + Number(n || 0).toLocaleString('en-PK');
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const todayKey = () => new Date().toISOString().slice(0,10);
-
-const DB = { products:[], orders:[], reviews:[], expenses:[], visits:[], locations:[], tickers:[], settings:{} };
 
 /* ============================================================
-   AUTH
+   AUTH + SESSION TIMEOUT
 ============================================================ */
-(async function checkAuth(){
-  const { data:{ session } } = await sb.auth.getSession();
-  if (session) enterAdmin();
+(async function init() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) enterAdmin(session);
 })();
 
+// Auth tab switching
+$('#tab-login').addEventListener('click', () => {
+  $('#tab-login').classList.add('border-red-800','text-red-800');
+  $('#tab-login').classList.remove('border-transparent','text-gray-500');
+  $('#tab-register').classList.remove('border-red-800','text-red-800');
+  $('#tab-register').classList.add('border-transparent','text-gray-500');
+  $('#login-form').classList.remove('hidden');
+  $('#register-form').classList.add('hidden');
+});
+$('#tab-register').addEventListener('click', () => {
+  $('#tab-register').classList.add('border-red-800','text-red-800');
+  $('#tab-register').classList.remove('border-transparent','text-gray-500');
+  $('#tab-login').classList.remove('border-red-800','text-red-800');
+  $('#tab-login').classList.add('border-transparent','text-gray-500');
+  $('#register-form').classList.remove('hidden');
+  $('#login-form').classList.add('hidden');
+});
+
+// Login
 $('#login-form').addEventListener('submit', async e => {
   e.preventDefault();
   const errEl = $('#login-error');
-  const { error } = await sb.auth.signInWithPassword({
+  errEl.classList.add('hidden');
+  const { data, error } = await supabaseClient.auth.signInWithPassword({
     email: $('#login-email').value,
     password: $('#login-password').value
   });
-  if (error) { errEl.textContent = error.message; errEl.classList.remove('hidden'); }
-  else enterAdmin();
+  if (error) { errEl.textContent = error.message; errEl.classList.remove('hidden'); return; }
+  enterAdmin(data.session);
 });
 
-$('#logout-btn').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
-$('#refresh-btn').addEventListener('click', () => loadAll(true));
+// Register
+$('#register-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const msgEl = $('#register-msg');
+  const pw = $('#register-password').value;
+  const pw2 = $('#register-confirm').value;
+  if (pw !== pw2) {
+    msgEl.textContent = 'Passwords do not match';
+    msgEl.className = 'text-sm text-center text-red-600';
+    msgEl.classList.remove('hidden');
+    return;
+  }
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: $('#register-email').value,
+    password: pw
+  });
+  if (error) {
+    msgEl.textContent = 'Error: ' + error.message;
+    msgEl.className = 'text-sm text-center text-red-600';
+    msgEl.classList.remove('hidden');
+    return;
+  }
+  if (data.session) {
+    enterAdmin(data.session);
+  } else {
+    msgEl.textContent = '✅ Account created! Check your email to verify, then login.';
+    msgEl.className = 'text-sm text-center text-green-700';
+    msgEl.classList.remove('hidden');
+    $('#register-form').reset();
+  }
+});
 
-function enterAdmin(){
+// Logout
+$('#logout-btn').addEventListener('click', async () => {
+  await supabaseClient.auth.signOut();
+  location.reload();
+});
+
+function enterAdmin(session) {
   $('#login-screen').classList.add('hidden');
   $('#admin-screen').classList.remove('hidden');
+  $('#session-start').textContent = new Date().toLocaleString('en-PK');
+  startSessionTimeout();
   loadAll();
+}
+
+function startSessionTimeout() {
+  const TIMEOUT_MS = 2 * 60 * 60 * 1000; // 2 hours
+  ['mousemove','keydown','click','scroll'].forEach(evt =>
+    document.addEventListener(evt, () => { lastActivity = Date.now(); }, { passive: true })
+  );
+  clearInterval(sessionTimer);
+  sessionTimer = setInterval(async () => {
+    if (Date.now() - lastActivity > TIMEOUT_MS) {
+      await supabaseClient.auth.signOut();
+      alert('Session expired due to inactivity. Please login again.');
+      location.reload();
+    }
+  }, 60_000); // check every minute
 }
 
 /* ============================================================
    TABS
 ============================================================ */
-$$('.tab-btn').forEach(b => b.addEventListener('click', () => {
-  $$('.tab-btn').forEach(x => x.classList.remove('active'));
+$$('.admin-tab').forEach(b => b.addEventListener('click', () => {
+  $$('.admin-tab').forEach(x => x.classList.remove('active'));
   b.classList.add('active');
   $$('.tab-panel').forEach(p => p.classList.add('hidden'));
   $('#tab-' + b.dataset.tab).classList.remove('hidden');
   if (b.dataset.tab === 'dashboard') renderDashboard();
 }));
 
+$('#refresh-btn').addEventListener('click', () => loadAll(true));
+
 /* ============================================================
-   LOAD DATA
+   LOAD ALL DATA
 ============================================================ */
-async function loadAll(showMsg){
+async function loadAll(showMsg) {
   try {
     const [p,o,r,e,v,l,t,s] = await Promise.all([
-      sb.from('products').select('*').order('created_at',{ascending:false}),
-      sb.from('orders').select('*').order('created_at',{ascending:false}).limit(500),
-      sb.from('reviews').select('*').order('created_at',{ascending:false}).limit(500),
-      sb.from('expenses').select('*').order('expense_date',{ascending:false}).limit(500),
-      sb.from('site_visits').select('created_at,device').order('created_at',{ascending:false}).limit(8000),
-      sb.from('store_locations').select('*').order('id'),
-      sb.from('ticker_messages').select('*').order('sort_order'),
-      sb.from('settings').select('*')
+      supabaseClient.from('products').select('*').order('created_at',{ascending:false}),
+      supabaseClient.from('orders').select('*').order('created_at',{ascending:false}).limit(500),
+      supabaseClient.from('reviews').select('*').order('created_at',{ascending:false}).limit(500),
+      supabaseClient.from('expenses').select('*').order('expense_date',{ascending:false}).limit(500),
+      supabaseClient.from('site_visits').select('created_at,device').order('created_at',{ascending:false}).limit(8000),
+      supabaseClient.from('store_locations').select('*').order('id'),
+      supabaseClient.from('ticker_messages').select('*').order('sort_order'),
+      supabaseClient.from('settings').select('*')
     ]);
+
     DB.products  = p.data || [];
     DB.orders    = o.data || [];
     DB.reviews   = r.data || [];
@@ -373,123 +477,104 @@ async function loadAll(showMsg){
     DB.locations = l.data || [];
     DB.tickers   = t.data || [];
     DB.settings  = Object.fromEntries((s.data || []).map(x => [x.key, x.value]));
+
     renderAll();
-    if (showMsg) flash('#form-msg','Data refreshed ✅','green');
+    if (showMsg) flash('#form-msg', 'Data refreshed ✅', 'green');
   } catch (err) {
     console.error(err);
     alert('Load error: ' + err.message);
   }
 }
 
-function renderAll(){
-  renderDashboard(); renderProducts(); renderOrders();
-  renderPayments(); renderReviews(); renderExpenses();
-  renderLocations(); renderTickers(); renderSettings();
+function renderAll() {
+  renderDashboard();
+  renderProducts();
+  renderOrders();
+  renderPayments();
+  renderReviews();
+  renderExpenses();
+  renderLocations();
+  renderTickers();
+  renderSettings();
 }
 
 /* ============================================================
    HELPERS
 ============================================================ */
-function flash(sel, text, color){
+function flash(sel, text, color) {
   const el = $(sel);
   if (!el) return;
   el.textContent = text;
-  el.className = 'text-center text-sm ' + (color === 'green' ? 'text-green-700' : 'text-red-600');
+  el.className = 'admin-flash admin-flash-' + (color === 'green' ? 'success' : 'error');
   el.classList.remove('hidden');
-  setTimeout(() => el.classList.add('hidden'), 4000);
-}
-function normPhone(p){
-  let d = String(p || '').replace(/\D/g,'');
-  if (d.startsWith('0')) d = '92' + d.slice(1);
-  else if (!d.startsWith('92') && d.length === 10) d = '92' + d;
-  return d;
-}
-function waLink(phone, msg){
-  return 'https://wa.me/' + normPhone(phone) + '?text=' + encodeURIComponent(msg);
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.add('hidden'), 4000);
 }
 
-/* Send WhatsApp – automatic if API configured, otherwise opens wa.me */
-async function sendWhatsApp(phone, message){
-  const url   = DB.settings.wa_api_url;
-  const token = DB.settings.wa_api_token;
-  if (url && token) {
-    try {
-      const res = await fetch(url, {
-        method:'POST',
-        headers:{ 'Content-Type':'application/json' },
-        body: JSON.stringify({ token, to: normPhone(phone), body: message })
-      });
-      if (res.ok) return { ok:true, auto:true };
-    } catch(e){ console.warn('WA API failed, falling back', e); }
-  }
-  window.open(waLink(phone, message), '_blank');
-  return { ok:true, auto:false };
-}
+function orderRevenue(o) { return (o.items||[]).reduce((a,i)=>a + Number(i.price||0)*Number(i.qty||0), 0); }
+function orderCost(o)    { return (o.items||[]).reduce((a,i)=>a + Number(i.cost||0)*Number(i.qty||0), 0); }
 
-/* Order profit */
-function orderRevenue(o){ return (o.items||[]).reduce((a,i)=>a + Number(i.price||0)*Number(i.qty||0), 0); }
-function orderCost(o){    return (o.items||[]).reduce((a,i)=>a + Number(i.cost||0)*Number(i.qty||0), 0); }
-
-const STATUS_COLORS = {
-  new:'bg-blue-100 text-blue-800', confirmed:'bg-indigo-100 text-indigo-800',
-  packed:'bg-purple-100 text-purple-800', dispatched:'bg-amber-100 text-amber-800',
-  delivered:'bg-green-100 text-green-800', cancelled:'bg-red-100 text-red-800'
+const STATUS_PILL = {
+  new:'pill-new', confirmed:'pill-confirmed', packed:'pill-packed',
+  dispatched:'pill-dispatched', delivered:'pill-delivered', cancelled:'pill-cancelled'
 };
-const PAY_COLORS = {
-  pending:'bg-gray-200 text-gray-700', submitted:'bg-yellow-100 text-yellow-800',
-  verified:'bg-green-100 text-green-800', rejected:'bg-red-100 text-red-800'
+const PAY_PILL = {
+  pending:'pill-pending', submitted:'pill-submitted', verified:'pill-verified', rejected:'pill-rejected'
 };
+
+function orderCode() { return 'TA-' + Date.now().toString(36).slice(-5).toUpperCase() + Math.random().toString(36).slice(2,5).toUpperCase(); }
 
 /* ============================================================
    DASHBOARD
 ============================================================ */
-function renderDashboard(){
-  const today = todayKey();
+function renderDashboard() {
+  const today = new Date().toISOString().slice(0,10);
   const visitsToday = DB.visits.filter(v => v.created_at.slice(0,10) === today).length;
   const active = DB.orders.filter(o => o.order_status !== 'cancelled');
-
   const revenue  = active.reduce((a,o) => a + orderRevenue(o), 0);
   const prodCost = active.reduce((a,o) => a + orderCost(o), 0);
   const expenses = DB.expenses.reduce((a,e) => a + Number(e.amount||0), 0);
   const netProfit = revenue - prodCost - expenses;
-
-  const pending  = DB.orders.filter(o => !['delivered','cancelled'].includes(o.order_status)).length;
-  const delivered= DB.orders.filter(o => o.order_status === 'delivered').length;
+  const pending = DB.orders.filter(o => !['delivered','cancelled'].includes(o.order_status)).length;
+  const delivered = DB.orders.filter(o => o.order_status === 'delivered').length;
   const awaitingPay = DB.orders.filter(o => o.payment_status === 'submitted').length;
   const pendingReviews = DB.reviews.filter(r => !r.is_approved).length;
 
+  // Badges
+  const newOrders = DB.orders.filter(o => o.order_status === 'new').length;
+  const newPayments = awaitingPay;
+  const ordersBadge = $('#tab-orders-badge');
+  const payBadge = $('#tab-pay-badge');
+  newOrders ? (ordersBadge.textContent = newOrders, ordersBadge.classList.remove('hidden')) : ordersBadge.classList.add('hidden');
+  newPayments ? (payBadge.textContent = newPayments, payBadge.classList.remove('hidden')) : payBadge.classList.add('hidden');
+
   $('#dash-kpis').innerHTML = `
-    <div class="kpi"><div class="text-2xl font-bold text-red-800">${visitsToday}</div><div class="text-xs text-gray-500 font-semibold">Visitors Today</div></div>
-    <div class="kpi" style="border-left-color:#0D7377"><div class="text-2xl font-bold text-teal-700">${DB.visits.length}</div><div class="text-xs text-gray-500 font-semibold">Total Visits Logged</div></div>
-    <div class="kpi" style="border-left-color:#9B1B1B"><div class="text-2xl font-bold text-red-800">${DB.orders.length}</div><div class="text-xs text-gray-500 font-semibold">Total Orders</div></div>
-    <div class="kpi" style="border-left-color:#1A5F2A"><div class="text-2xl font-bold text-green-700">${money(revenue)}</div><div class="text-xs text-gray-500 font-semibold">Gross Revenue</div></div>
-    <div class="kpi" style="border-left-color:#D94F70"><div class="text-2xl font-bold text-pink-700">${pending}</div><div class="text-xs text-gray-500 font-semibold">Orders In Progress</div></div>
-    <div class="kpi" style="border-left-color:#C9A227"><div class="text-2xl font-bold text-yellow-700">${awaitingPay}</div><div class="text-xs text-gray-500 font-semibold">Payments To Verify</div></div>
-    <div class="kpi" style="border-left-color:#6B0F0F"><div class="text-2xl font-bold text-red-900">${delivered}</div><div class="text-xs text-gray-500 font-semibold">Delivered</div></div>
-    <div class="kpi" style="border-left-color:#9333ea"><div class="text-2xl font-bold text-purple-700">${pendingReviews}</div><div class="text-xs text-gray-500 font-semibold">Reviews To Approve</div></div>
+    <div class="admin-kpi"><div class="kpi-value">${visitsToday}</div><div class="kpi-label">Visitors Today</div></div>
+    <div class="admin-kpi" style="border-left-color:#0D7377"><div class="kpi-value" style="color:#0D7377">${DB.visits.length}</div><div class="kpi-label">Total Visits</div></div>
+    <div class="admin-kpi" style="border-left-color:#9B1B1B"><div class="kpi-value" style="color:#9B1B1B">${DB.orders.length}</div><div class="kpi-label">Total Orders</div></div>
+    <div class="admin-kpi" style="border-left-color:#1A5F2A"><div class="kpi-value" style="color:#1A5F2A">${money(revenue)}</div><div class="kpi-label">Gross Revenue</div></div>
+    <div class="admin-kpi" style="border-left-color:#D94F70"><div class="kpi-value" style="color:#D94F70">${pending}</div><div class="kpi-label">In Progress</div></div>
+    <div class="admin-kpi" style="border-left-color:#C9A227"><div class="kpi-value" style="color:#C9A227">${awaitingPay}</div><div class="kpi-label">Awaiting Verify</div></div>
+    <div class="admin-kpi" style="border-left-color:#6B0F0F"><div class="kpi-value" style="color:#6B0F0F">${delivered}</div><div class="kpi-label">Delivered</div></div>
+    <div class="admin-kpi" style="border-left-color:#9333ea"><div class="kpi-value" style="color:#9333ea">${pendingReviews}</div><div class="kpi-label">Reviews Pending</div></div>
   `;
 
-  /* ---- 7 day chart ---- */
+  // Chart
   const days = [];
-  for (let i = 6; i >= 0; i--){
+  for (let i = 6; i >= 0; i--) {
     const d = new Date(); d.setDate(d.getDate() - i);
     days.push({ key: d.toISOString().slice(0,10), label: d.toLocaleDateString('en',{weekday:'short'}), count: 0 });
   }
-  DB.visits.forEach(v => {
-    const k = v.created_at.slice(0,10);
-    const d = days.find(x => x.key === k);
-    if (d) d.count++;
-  });
+  DB.visits.forEach(v => { const d = days.find(x => x.key === v.created_at.slice(0,10)); if (d) d.count++; });
   const max = Math.max(1, ...days.map(d => d.count));
   $('#dash-chart').innerHTML = days.map(d => `
     <div class="flex-1 flex flex-col items-center justify-end h-full gap-2">
       <span class="text-xs font-bold text-red-800">${d.count}</span>
-      <div class="w-full rounded-t-lg bg-gradient-to-t from-red-800 to-amber-400 transition-all"
-           style="height:${Math.max(4,(d.count/max)*100)}%"></div>
+      <div class="chart-bar" style="height:${Math.max(4,(d.count/max)*100)}%"></div>
       <span class="text-[10px] text-gray-500 font-semibold">${d.label}</span>
     </div>`).join('');
 
-  /* ---- Top products ---- */
+  // Top products
   const sales = {};
   active.forEach(o => (o.items||[]).forEach(it => {
     const k = it.name || 'Unknown';
@@ -507,26 +592,15 @@ function renderDashboard(){
       </div>
     </div>`).join('') : '<p class="text-gray-400 text-xs">No sales yet.</p>';
 
-  /* ---- Profit ---- */
+  // Profit
   $('#dash-profit').innerHTML = `
-    <div class="p-4 rounded-xl bg-green-50 border border-green-200">
-      <p class="text-xs font-semibold text-green-800">Gross Revenue</p>
-      <p class="text-xl font-bold text-green-700">${money(revenue)}</p>
-    </div>
-    <div class="p-4 rounded-xl bg-orange-50 border border-orange-200">
-      <p class="text-xs font-semibold text-orange-800">Manufacturing Cost</p>
-      <p class="text-xl font-bold text-orange-700">− ${money(prodCost)}</p>
-    </div>
-    <div class="p-4 rounded-xl bg-red-50 border border-red-200">
-      <p class="text-xs font-semibold text-red-800">Business Expenses</p>
-      <p class="text-xl font-bold text-red-700">− ${money(expenses)}</p>
-    </div>
-    <div class="p-4 rounded-xl ${netProfit >= 0 ? 'bg-emerald-100 border-emerald-300' : 'bg-red-100 border-red-300'} border-2">
-      <p class="text-xs font-semibold text-gray-700">NET PROFIT</p>
-      <p class="text-xl font-bold ${netProfit >= 0 ? 'text-emerald-800' : 'text-red-800'}">${money(netProfit)}</p>
-    </div>`;
+    <div class="profit-box profit-revenue"><div class="pb-label">Gross Revenue</div><div class="pb-value">${money(revenue)}</div></div>
+    <div class="profit-box profit-cost"><div class="pb-label">Mfg. Cost</div><div class="pb-value">− ${money(prodCost)}</div></div>
+    <div class="profit-box profit-expense"><div class="pb-label">Expenses</div><div class="pb-value">− ${money(expenses)}</div></div>
+    <div class="profit-box profit-net ${netProfit<0?'negative':''}"><div class="pb-label">Net Profit</div><div class="pb-value">${money(netProfit)}</div></div>
+  `;
 
-  /* ---- Recent orders ---- */
+  // Recent orders
   const recent = DB.orders.slice(0,6);
   $('#dash-orders').innerHTML = recent.length ? `
     <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead>
@@ -535,8 +609,8 @@ function renderDashboard(){
         <td class="font-semibold text-red-800">${esc(o.order_code)}</td>
         <td>${esc(o.customer_name)}<br><span class="text-xs text-gray-500">${esc(o.phone)}</span></td>
         <td class="font-semibold">${money(o.total)}</td>
-        <td><span class="pill ${PAY_COLORS[o.payment_status]||''}">${esc(o.payment_status)}</span></td>
-        <td><span class="pill ${STATUS_COLORS[o.order_status]||''}">${esc(o.order_status)}</span></td>
+        <td><span class="pill ${PAY_PILL[o.payment_status]||''}">${esc(o.payment_status)}</span></td>
+        <td><span class="pill ${STATUS_PILL[o.order_status]||''}">${esc(o.order_status)}</span></td>
       </tr>`).join('')}</tbody>`
     : '<tbody><tr><td class="text-gray-400 py-4">No orders yet.</td></tr></tbody>';
 }
@@ -544,24 +618,17 @@ function renderDashboard(){
 /* ============================================================
    PRODUCTS
 ============================================================ */
-function calcFinal(){
+function calcFinal() {
   const price = Number($('#price').value) || 0;
   const disc  = Number($('#discount_percent').value) || 0;
   const tcs   = Number($('#tcs_cost').value) || 0;
-  const final = Math.round(price * (1 - disc/100)) + tcs;
-  $('#total_price').value = final;
-
+  $('#total_price').value = Math.round(price * (1 - disc/100)) + tcs;
   const cost = Number($('#cost_price').value) || 0;
-  const margin = final - cost;
-  const pct = final > 0 ? ((margin/final)*100).toFixed(1) : 0;
-  $('#margin-hint').textContent = cost > 0
-    ? `💰 Profit per unit: ${money(margin)} (${pct}% margin)`
-    : '';
+  const margin = Number($('#total_price').value) - cost;
+  const pct = Number($('#total_price').value) > 0 ? ((margin/Number($('#total_price').value))*100).toFixed(1) : 0;
+  $('#margin-hint').textContent = cost > 0 ? `💰 Profit/unit: ${money(margin)} (${pct}%)` : '';
 }
-['price','discount_percent','tcs_cost','cost_price'].forEach(id =>
-  $('#'+id).addEventListener('input', calcFinal));
-
-let editingProductId = null;
+['price','discount_percent','tcs_cost','cost_price'].forEach(id => $('#'+id).addEventListener('input', calcFinal));
 
 $('#product-form').addEventListener('submit', async e => {
   e.preventDefault();
@@ -571,12 +638,11 @@ $('#product-form').addEventListener('submit', async e => {
   try {
     const file = $('#image').files[0];
     let imageUrl = null;
-
     if (file) {
       const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g,'_')}`;
-      const { error: upErr } = await sb.storage.from('product-images').upload(fileName, file);
+      const { error: upErr } = await supabaseClient.storage.from('product-images').upload(fileName, file);
       if (upErr) throw upErr;
-      imageUrl = sb.storage.from('product-images').getPublicUrl(fileName).data.publicUrl;
+      imageUrl = supabaseClient.storage.from('product-images').getPublicUrl(fileName).data.publicUrl;
     }
 
     const payload = {
@@ -597,10 +663,10 @@ $('#product-form').addEventListener('submit', async e => {
 
     let error;
     if (editingProductId) {
-      ({ error } = await sb.from('products').update(payload).eq('id', editingProductId));
+      ({ error } = await supabaseClient.from('products').update(payload).eq('id', editingProductId));
     } else {
       if (!imageUrl) throw new Error('Please select a product image');
-      ({ error } = await sb.from('products').insert(payload));
+      ({ error } = await supabaseClient.from('products').insert(payload));
     }
     if (error) throw error;
 
@@ -615,7 +681,7 @@ $('#product-form').addEventListener('submit', async e => {
   }
 });
 
-function resetProductForm(){
+function resetProductForm() {
   $('#product-form').reset();
   $('#prod-id').value = '';
   $('#discount_percent').value = 0;
@@ -631,7 +697,7 @@ function resetProductForm(){
 }
 $('#cancel-edit').addEventListener('click', resetProductForm);
 
-function editProduct(id){
+function editProduct(id) {
   const p = DB.products.find(x => x.id === id);
   if (!p) return;
   editingProductId = id;
@@ -646,7 +712,7 @@ function editProduct(id){
   $('#quality').value = p.quality || '';
   $('#badge').value = p.badge || '';
   $('#stock').value = p.stock ?? 10;
-  $('#prod-form-title').textContent = '✏️ Edit Product – ' + p.name;
+  $('#prod-form-title').textContent = '✏️ Edit – ' + p.name;
   $('#submit-btn').textContent = 'Update Product';
   $('#cancel-edit').classList.remove('hidden');
   $('#img-req').classList.add('hidden');
@@ -654,17 +720,17 @@ function editProduct(id){
   window.scrollTo({ top: 0, behavior:'smooth' });
 }
 
-function renderProducts(){
+function renderProducts() {
   $('#prod-count').textContent = DB.products.length;
   $('#products-table').innerHTML = DB.products.length ? `
-    <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Discount</th><th>Final</th><th>Cost</th><th>Stock</th><th>Actions</th></tr></thead>
+    <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Disc</th><th>Final</th><th>Cost</th><th>Stock</th><th>Action</th></tr></thead>
     <tbody>${DB.products.map(p => `
       <tr>
         <td><img src="${esc(p.image_url)}" class="w-12 h-12 object-cover rounded-lg" onerror="this.style.visibility='hidden'"></td>
         <td class="font-semibold max-w-[180px]">${esc(p.name)}</td>
         <td class="text-xs">${esc(p.category)}</td>
         <td>${money(p.price)}</td>
-        <td>${p.discount_percent ? `<span class="pill bg-pink-100 text-pink-700">${p.discount_percent}% OFF</span>` : '—'}</td>
+        <td>${p.discount_percent ? `<span class="pill pill-verified">${p.discount_percent}%</span>` : '—'}</td>
         <td class="font-bold text-red-800">${money(p.total_price)}</td>
         <td class="text-xs text-gray-500">${money(p.cost_price)}</td>
         <td class="${Number(p.stock) <= 2 ? 'text-red-600 font-bold' : ''}">${p.stock ?? '—'}</td>
@@ -676,9 +742,9 @@ function renderProducts(){
     : '<tbody><tr><td class="text-gray-400 py-6 text-center">No products yet.</td></tr></tbody>';
 }
 
-async function deleteProduct(id){
+async function deleteProduct(id) {
   if (!confirm('Delete this product permanently?')) return;
-  await sb.from('products').delete().eq('id', id);
+  await supabaseClient.from('products').delete().eq('id', id);
   await loadAll();
 }
 window.editProduct = editProduct;
@@ -690,10 +756,9 @@ window.deleteProduct = deleteProduct;
 $('#order-search').addEventListener('input', renderOrders);
 $('#order-filter').addEventListener('change', renderOrders);
 
-function renderOrders(){
+function renderOrders() {
   const q = ($('#order-search').value || '').toLowerCase().trim();
   const f = $('#order-filter').value;
-
   let list = DB.orders;
   if (f !== 'all') list = list.filter(o => o.order_status === f);
   if (q) list = list.filter(o =>
@@ -702,67 +767,86 @@ function renderOrders(){
     (o.phone||'').includes(q));
 
   const box = $('#orders-list');
-  if (!list.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No orders found.</div>'; return; }
+  if (!list.length) { box.innerHTML = '<div class="admin-card text-center text-gray-400 py-10">No orders found.</div>'; return; }
 
   box.innerHTML = list.map(o => {
-    const balance = Number(o.total||0) - Number(o.advance_paid||0);
+    const advance = Number(o.advance_paid||0);
+    const balance = Number(o.total||0) - advance;
+    const isPaidFull = o.payment_status === 'verified' && balance <= 0;
     return `
-    <div class="card">
+    <div class="admin-card">
       <div class="flex flex-wrap justify-between items-start gap-3 mb-3">
         <div>
           <p class="font-bold text-red-900 text-lg">${esc(o.order_code)}</p>
           <p class="text-xs text-gray-500">${new Date(o.created_at).toLocaleString('en-PK')}</p>
         </div>
         <div class="flex gap-2 flex-wrap">
-          <span class="pill ${PAY_COLORS[o.payment_status]||''}">💳 ${esc(o.payment_status)}</span>
-          <span class="pill ${STATUS_COLORS[o.order_status]||''}">📦 ${esc(o.order_status)}</span>
-          ${o.tcs_tracking ? `<span class="pill bg-teal-100 text-teal-800">TCS: ${esc(o.tcs_tracking)}</span>` : ''}
+          ${isPaidFull ? '<span class="pill pill-verified">💚 PAID IN FULL</span>' : ''}
+          <span class="pill ${PAY_PILL[o.payment_status]||''}">💳 ${esc(o.payment_status)}</span>
+          <span class="pill ${STATUS_PILL[o.order_status]||''}">📦 ${esc(o.order_status)}</span>
+          ${o.tcs_tracking ? `<span class="pill pill-dispatched">TCS: ${esc(o.tcs_tracking)}</span>` : ''}
         </div>
       </div>
 
-      <div class="grid md:grid-cols-2 gap-3 text-sm mb-3">
+      <div class="grid md:grid-cols-3 gap-3 text-sm mb-3">
         <div class="bg-amber-50 rounded-xl p-3">
           <p class="font-semibold text-red-900 mb-1">👤 Customer</p>
           <p>${esc(o.customer_name)}</p>
           <p class="text-gray-600">📞 ${esc(o.phone)}</p>
-          <p class="text-gray-600">🏠 ${esc(o.city || '')} ${esc(o.address || '')}</p>
+          <p class="text-gray-600 text-xs">🏠 ${esc(o.city||'')} ${esc(o.address||'')}</p>
         </div>
         <div class="bg-green-50 rounded-xl p-3">
           <p class="font-semibold text-green-900 mb-1">💰 Payment</p>
           <p>Total: <b>${money(o.total)}</b></p>
-          <p>Advance received: <b class="text-green-700">${money(o.advance_paid)}</b></p>
-          <p>Balance on delivery: <b class="text-red-700">${money(balance)}</b></p>
+          <p>Advance: <b class="text-green-700">${money(o.advance_paid)}</b></p>
+          <p>Balance: <b class="${balance > 0 ? 'text-red-700' : 'text-green-700'}">${money(balance)}</b></p>
+          ${o.balance_paid > 0 ? `<p class="text-xs text-green-700">Balance received: ${money(o.balance_paid)}</p>` : ''}
+        </div>
+        <div class="bg-blue-50 rounded-xl p-3">
+          <p class="font-semibold text-blue-900 mb-1">📦 Delivery</p>
+          ${o.tcs_tracking ? `<p>TCS ID: <b>${esc(o.tcs_tracking)}</b></p>` : '<p class="text-gray-500 text-xs">Not dispatched</p>'}
+          ${o.delivered_at ? `<p class="text-xs">Delivered: ${new Date(o.delivered_at).toLocaleDateString('en-PK')}</p>` : ''}
+          <p class="text-xs">Method: ${o.balance_method === 'prepaid' ? 'Prepaid' : 'COD'}</p>
         </div>
       </div>
 
-      <div class="mb-3">
-        <p class="text-xs font-semibold text-gray-500 mb-1">ITEMS</p>
-        <div class="flex flex-wrap gap-2">
-          ${(o.items||[]).map(i => `<span class="text-xs bg-gray-100 px-2 py-1 rounded-lg">${esc(i.name)} × ${i.qty} — ${money(i.price)}</span>`).join('')}
-        </div>
+      <div class="mb-3 flex flex-wrap gap-2">
+        ${(o.items||[]).map(i => `<span class="text-xs bg-gray-100 px-2 py-1 rounded-lg">${esc(i.name)} × ${i.qty} — ${money(i.price)}</span>`).join('')}
       </div>
 
       <div class="flex flex-wrap gap-2 pt-2 border-t border-amber-100">
-        ${o.payment_proof_url ? `<a href="${esc(o.payment_proof_url)}" target="_blank" class="btn btn-ghost">🧾 View Payment Proof</a>` : ''}
-        ${o.payment_status !== 'verified' && o.payment_proof_url ? `<button onclick="verifyPayment(${o.id})" class="btn btn-green">✅ Verify Payment</button>` : ''}
-        <button onclick="openOrderModal(${o.id})" class="btn btn-red">⚙️ Manage / Dispatch</button>
-        <a href="${waLink(o.phone, 'Assalam-o-Alaikum ' + o.customer_name + '! Regarding your order ' + o.order_code + ' from Traditional Artistry Work.')}" target="_blank" class="btn btn-ghost">💬 Chat</a>
+        ${o.payment_proof_url ? `<a href="${esc(o.payment_proof_url)}" target="_blank" class="admin-btn admin-btn-ghost">🧾 View Proof</a>` : ''}
+        ${o.payment_status !== 'verified' && o.payment_proof_url ? `<button onclick="verifyPayment(${o.id})" class="admin-btn admin-btn-success">✅ Verify Advance</button>` : ''}
+        <button onclick="openOrderModal(${o.id})" class="admin-btn admin-btn-primary">⚙️ Manage</button>
+        <a href="https://wa.me/${normPhone(o.phone)}?text=${encodeURIComponent('Assalam-o-Alaikum ' + o.customer_name + '! Regarding order ' + o.order_code)}" target="_blank" class="admin-btn admin-btn-ghost">💬 Chat</a>
       </div>
     </div>`;
   }).join('');
 }
 
-async function verifyPayment(id){
-  await sb.from('orders').update({ payment_status:'verified', updated_at:new Date().toISOString() }).eq('id', id);
+async function verifyPayment(id) {
+  const o = DB.orders.find(x => x.id === id);
+  if (!o) return;
+  const advance = Number(o.advance_paid) || Math.round((Number(o.total)||0) * (Number(o.advance_percent)||50) / 100);
+  await supabaseClient.from('orders').update({
+    payment_status: 'verified',
+    advance_paid: advance,
+    order_status: 'confirmed',
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
   await loadAll();
 }
 window.verifyPayment = verifyPayment;
 
-/* ---------- Order manage modal ---------- */
-function openOrderModal(id){
+/* ============================================================
+   ORDER MANAGE MODAL
+============================================================ */
+function openOrderModal(id) {
   const o = DB.orders.find(x => x.id === id);
   if (!o) return;
-  const balance = Number(o.total||0) - Number(o.advance_paid||0);
+  currentOrderId = id;
+  const advance = Number(o.advance_paid||0);
+  const balance = Number(o.total||0) - advance - Number(o.balance_paid||0);
 
   $('#order-modal-body').innerHTML = `
     <div class="flex justify-between items-center mb-4">
@@ -772,54 +856,67 @@ function openOrderModal(id){
 
     <div class="space-y-4 text-sm">
       <div class="grid grid-cols-2 gap-3">
-        <div><label class="lbl">Order Status</label>
-          <select id="m-status" class="form-input">
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Order Status</label>
+          <select id="m-status" class="admin-input">
             ${['new','confirmed','packed','dispatched','delivered','cancelled'].map(s =>
               `<option value="${s}" ${o.order_status===s?'selected':''}>${s}</option>`).join('')}
           </select>
         </div>
-        <div><label class="lbl">Payment Status</label>
-          <select id="m-pay" class="form-input">
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Payment Status</label>
+          <select id="m-pay" class="admin-input">
             ${['pending','submitted','verified','rejected'].map(s =>
               `<option value="${s}" ${o.payment_status===s?'selected':''}>${s}</option>`).join('')}
           </select>
         </div>
       </div>
 
-      <div class="grid grid-cols-2 gap-3">
-        <div><label class="lbl">Advance Received (Rs)</label>
-          <input id="m-advance" type="number" min="0" class="form-input" value="${o.advance_paid || 0}"></div>
-        <div><label class="lbl">Balance on Delivery (Rs)</label>
-          <input id="m-balance" type="number" class="form-input" value="${balance}" readonly></div>
+      <div class="grid grid-cols-3 gap-3">
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Total</label>
+          <input class="admin-input" value="${money(o.total)}" readonly></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Advance Paid</label>
+          <input id="m-advance" type="number" min="0" class="admin-input" value="${advance}"></div>
+        <div><label class="block text-xs font-semibold text-gray-600 mb-1">Balance Due</label>
+          <input class="admin-input" value="${money(balance)}" readonly></div>
       </div>
 
-      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
-        <label class="lbl">🚚 TCS Tracking ID</label>
-        <input id="m-tcs" class="form-input" value="${esc(o.tcs_tracking||'')}" placeholder="e.g. 12345678901">
-        <p class="text-xs text-gray-500 mt-1">When you dispatch, enter the TCS ID and press the green button – the customer receives it instantly on WhatsApp.</p>
+      <div class="advance-info-box">
+        <h4>🚚 TCS Dispatch</h4>
+        <label class="block text-xs font-semibold text-gray-600 mb-1 mt-2">TCS Tracking ID</label>
+        <input id="m-tcs" class="admin-input" value="${esc(o.tcs_tracking||'')}" placeholder="e.g. 12345678901">
+        <label class="block text-xs font-semibold text-gray-600 mb-1 mt-3">Balance collection method</label>
+        <select id="m-balance-method" class="admin-input">
+          <option value="cod" ${o.balance_method==='cod'?'selected':''}>COD — TCS collects cash on delivery</option>
+          <option value="prepaid" ${o.balance_method==='prepaid'?'selected':''}>Prepaid — customer pays online before delivery</option>
+        </select>
       </div>
 
-      <div><label class="lbl">Internal Note</label>
-        <textarea id="m-note" rows="2" class="form-input">${esc(o.admin_note||'')}</textarea></div>
+      <div><label class="block text-xs font-semibold text-gray-600 mb-1">Internal Note</label>
+        <textarea id="m-note" rows="2" class="admin-input">${esc(o.admin_note||'')}</textarea></div>
 
-      <div class="flex flex-wrap gap-2 pt-2">
-        <button onclick="saveOrder(${o.id})" class="btn btn-ghost flex-1 py-3">💾 Save Changes</button>
-        <button onclick="dispatchOrder(${o.id})" class="btn btn-green flex-1 py-3">🚚 Dispatch & Send TCS ID</button>
+      <div class="flex flex-wrap gap-2 pt-2 border-t">
+        <button onclick="saveOrder(${o.id})" class="admin-btn admin-btn-ghost flex-1 py-3">💾 Save</button>
+        ${o.order_status === 'dispatched'
+          ? `<button onclick="openMarkDelivered(${o.id})" class="admin-btn admin-btn-success flex-1 py-3">✅ Mark Delivered & Confirm Payment</button>`
+          : `<button onclick="openDispatch(${o.id})" class="admin-btn admin-btn-primary flex-1 py-3">🚚 Dispatch & Send TCS ID</button>`}
       </div>
     </div>`;
 
   $('#order-modal').classList.remove('hidden');
 }
-function closeOrderModal(){ $('#order-modal').classList.add('hidden'); }
+function closeOrderModal() {
+  $('#order-modal').classList.add('hidden');
+  currentOrderId = null;
+}
 window.openOrderModal = openOrderModal;
 window.closeOrderModal = closeOrderModal;
 
-async function saveOrder(id){
-  await sb.from('orders').update({
+async function saveOrder(id) {
+  await supabaseClient.from('orders').update({
     order_status: $('#m-status').value,
     payment_status: $('#m-pay').value,
     advance_paid: Number($('#m-advance').value) || 0,
     tcs_tracking: $('#m-tcs').value || null,
+    balance_method: $('#m-balance-method').value,
     admin_note: $('#m-note').value || null,
     updated_at: new Date().toISOString()
   }).eq('id', id);
@@ -828,20 +925,75 @@ async function saveOrder(id){
 }
 window.saveOrder = saveOrder;
 
-async function dispatchOrder(id){
+/* ============================================================
+   DISPATCH FLOW — with confirmation
+============================================================ */
+function openDispatch(id) {
   const o = DB.orders.find(x => x.id === id);
-  const tcs = $('#m-tcs').value.trim();
-  if (!tcs) { alert('Please enter the TCS Tracking ID first.'); return; }
-  if (o.payment_status !== 'verified' && !confirm('⚠️ Payment is NOT verified yet. Dispatch anyway?')) return;
+  if (!o) return;
 
-  const advance = Number($('#m-advance').value) || Number(o.advance_paid) || 0;
+  const advance = Number(o.advance_paid||0);
+  const balance = Number(o.total||0) - advance;
+  const tcs = $('#m-tcs').value.trim();
+  const method = $('#m-balance-method').value;
+
+  if (o.payment_status !== 'verified') {
+    alert('⛔ Cannot dispatch: Advance payment is NOT verified yet.\n\nPlease verify the customer\'s advance screenshot first.');
+    return;
+  }
+  if (!tcs) {
+    alert('⛔ Please enter the TCS Tracking ID before dispatching.');
+    return;
+  }
+
+  const msgPreview =
+`Assalam-o-Alaikum ${o.customer_name} 🌸
+
+✅ Your order *${o.order_code}* has been dispatched via TCS.
+
+📦 TCS Tracking ID: *${tcs}*
+Track here: https://www.tcsexpress.com/tracking?tracking_number=${tcs}
+
+💰 Advance received: ${money(advance)}
+💵 ${method === 'cod' ? 'Balance to pay on delivery: ' + money(balance) : 'Fully prepaid — no cash on delivery'}
+
+Shukriya for shopping with us!
+Safdar Hussain — Traditional Artistry Work
+📞 0333-3882131`;
+
+  $('#confirm-body').innerHTML = `
+    <h3 class="text-lg font-bold text-red-900 mb-3">🚚 Confirm Dispatch</h3>
+    <div class="bg-amber-50 rounded-xl p-3 mb-4 text-sm space-y-1">
+      <p><b>Order:</b> ${esc(o.order_code)}</p>
+      <p><b>Customer:</b> ${esc(o.customer_name)}</p>
+      <p><b>Phone:</b> ${esc(o.phone)}</p>
+      <p><b>TCS ID:</b> ${esc(tcs)}</p>
+      <p><b>Advance Verified:</b> ${money(advance)} ✅</p>
+      <p><b>Balance (${method}):</b> ${money(balance)}</p>
+    </div>
+    <div class="mb-4">
+      <p class="text-xs font-semibold text-gray-600 mb-1">Message customer will receive on WhatsApp:</p>
+      <pre class="text-xs bg-gray-50 border border-gray-200 rounded-lg p-3 whitespace-pre-wrap max-h-52 overflow-y-auto">${esc(msgPreview)}</pre>
+    </div>
+    <div class="flex gap-2">
+      <button onclick="closeConfirm()" class="admin-btn admin-btn-ghost flex-1 py-3">Cancel</button>
+      <button onclick="doDispatch(${id}, '${tcs.replace(/'/g,"\\'")}', '${method}')" class="admin-btn admin-btn-success flex-1 py-3">✅ Confirm Dispatch</button>
+    </div>`;
+
+  $('#confirm-modal').classList.remove('hidden');
+}
+window.openDispatch = openDispatch;
+
+async function doDispatch(id, tcs, method) {
+  const o = DB.orders.find(x => x.id === id);
+  const advance = Number(o.advance_paid||0);
   const balance = Number(o.total||0) - advance;
 
-  await sb.from('orders').update({
+  await supabaseClient.from('orders').update({
     order_status: 'dispatched',
     tcs_tracking: tcs,
-    advance_paid: advance,
-    admin_note: $('#m-note').value || null,
+    balance_method: method,
+    admin_note: $('#m-note')?.value || o.admin_note || null,
     updated_at: new Date().toISOString()
   }).eq('id', id);
 
@@ -854,56 +1006,155 @@ async function dispatchOrder(id){
 🔎 Track here:
 https://www.tcsexpress.com/tracking?tracking_number=${tcs}
 
-💰 Advance received: Rs. ${advance.toLocaleString('en-PK')}
-💵 Balance to pay on delivery: Rs. ${balance.toLocaleString('en-PK')}
-
-Please keep the exact balance ready for the TCS rider.
+💰 Advance received: ${money(advance)}
+${method === 'cod'
+  ? `💵 Balance to pay on delivery: ${money(balance)}\n\nPlease keep the exact balance ready for the TCS rider.`
+  : `💳 Fully prepaid — no cash on delivery needed.`}
 
 Shukriya for shopping with us!
-Safdar Hussain – Traditional Artistry Work
+Safdar Hussain — Traditional Artistry Work
 📞 0333-3882131`;
 
   const r = await sendWhatsApp(o.phone, msg);
-  alert(r.auto ? '✅ Dispatched – WhatsApp message sent automatically.' : '✅ Dispatched – WhatsApp chat opened. Press Send to deliver the message.');
-
+  closeConfirm();
   closeOrderModal();
+  alert(r.auto ? '✅ Dispatched — WhatsApp sent automatically.' : '✅ Dispatched — WhatsApp chat opened, press Send.');
   await loadAll();
 }
-window.dispatchOrder = dispatchOrder;
+window.doDispatch = doDispatch;
 
 /* ============================================================
-   PAYMENTS
+   MARK DELIVERED FLOW — balance confirmation
 ============================================================ */
-function renderPayments(){
+function openMarkDelivered(id) {
+  const o = DB.orders.find(x => x.id === id);
+  if (!o) return;
+  const advance = Number(o.advance_paid||0);
+  const balance = Number(o.total||0) - advance;
+  const isPrepaid = o.balance_method === 'prepaid';
+
+  $('#confirm-body').innerHTML = `
+    <h3 class="text-lg font-bold text-red-900 mb-3">✅ Confirm Delivery</h3>
+    <div class="bg-green-50 rounded-xl p-3 mb-4 text-sm space-y-1">
+      <p><b>Order:</b> ${esc(o.order_code)}</p>
+      <p><b>Customer:</b> ${esc(o.customer_name)} (${esc(o.phone)})</p>
+      <p><b>Total:</b> ${money(o.total)}</p>
+      <p><b>Advance already received:</b> ${money(advance)}</p>
+      <p class="text-lg font-bold text-red-800 pt-1 border-t border-green-200 mt-2"><b>Remaining balance:</b> ${money(balance)}</p>
+    </div>
+
+    <div class="mb-4">
+      <p class="text-sm font-semibold text-gray-700 mb-2">${isPrepaid ? 'Did the customer already pay the balance online?' : 'How much cash did the TCS rider collect on delivery?'}</p>
+      <input id="confirm-amount" type="number" class="admin-input" placeholder="Enter exact amount in Rs" value="${isPrepaid ? balance : ''}">
+      <p class="text-xs text-gray-500 mt-2">⚠️ Type the exact amount you received. This will be recorded permanently and cannot be edited after confirmation.</p>
+    </div>
+
+    <div class="mb-4 bg-amber-50 rounded-lg p-3 text-xs">
+      <p class="font-semibold text-amber-900 mb-1">📱 Customer will receive WhatsApp receipt:</p>
+      <p class="text-gray-700">"✅ Payment Received — Thank you! Order ${esc(o.order_code)}: Rs. X advance + Rs. Y balance = Rs. Z FULLY PAID. This is your receipt."</p>
+    </div>
+
+    <div class="flex gap-2">
+      <button onclick="closeConfirm()" class="admin-btn admin-btn-ghost flex-1 py-3">Cancel</button>
+      <button onclick="confirmDelivery(${id})" class="admin-btn admin-btn-success flex-1 py-3">✅ Confirm & Send Receipt</button>
+    </div>`;
+
+  $('#confirm-modal').classList.remove('hidden');
+}
+window.openMarkDelivered = openMarkDelivered;
+
+async function confirmDelivery(id) {
+  const o = DB.orders.find(x => x.id === id);
+  const amountReceived = Number($('#confirm-amount').value) || 0;
+  const advance = Number(o.advance_paid||0);
+  const total = Number(o.total||0);
+  const expectedBalance = total - advance;
+
+  if (amountReceived <= 0) { alert('Please enter the amount received.'); return; }
+  if (amountReceived > expectedBalance) {
+    if (!confirm(`You entered ${money(amountReceived)} but only ${money(expectedBalance)} was due. Continue anyway?`)) return;
+  }
+
+  const newBalancePaid = Number(o.balance_paid||0) + amountReceived;
+  const remaining = total - advance - newBalancePaid;
+  const fullyPaid = remaining <= 0;
+
+  await supabaseClient.from('orders').update({
+    order_status: 'delivered',
+    delivered_at: new Date().toISOString(),
+    balance_paid: newBalancePaid,
+    payment_status: fullyPaid ? 'verified' : o.payment_status,
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+
+  // WhatsApp receipt
+  const receipt =
+`Assalam-o-Alaikum ${o.customer_name} 🌸
+
+✅ *PAYMENT RECEIVED — Thank you for your order!*
+
+🧾 *Official Receipt*
+Order Code: ${o.order_code}
+━━━━━━━━━━━━━━━━━━━
+💰 Total Order Value: ${money(total)}
+✅ Advance Paid:       ${money(advance)}
+✅ Balance Paid:       ${money(amountReceived)}
+━━━━━━━━━━━━━━━━━━━
+${fullyPaid ? '💚 *STATUS: PAID IN FULL*' : `⚠️ *Remaining: ${money(remaining)}*`}
+
+📦 Your order has been delivered. We hope you love it!
+
+Shukriya for shopping with *Traditional Artistry Work* 🌸
+Safdar Hussain
+📞 0333-3882131`;
+
+  const r = await sendWhatsApp(o.phone, receipt);
+  closeConfirm();
+  closeOrderModal();
+  alert(r.auto ? '✅ Delivery confirmed — receipt sent.' : '✅ Delivery confirmed — WhatsApp opened, press Send to deliver the receipt.');
+  await loadAll();
+}
+window.confirmDelivery = confirmDelivery;
+
+function closeConfirm() {
+  $('#confirm-modal').classList.add('hidden');
+}
+window.closeConfirm = closeConfirm;
+
+/* ============================================================
+   PAYMENTS TAB
+============================================================ */
+function renderPayments() {
   const list = DB.orders.filter(o => o.payment_proof_url || o.payment_status === 'submitted');
   const box = $('#payments-list');
-  if (!list.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No payment proofs submitted yet.</div>'; return; }
+  if (!list.length) { box.innerHTML = '<div class="admin-card text-center text-gray-400 py-10">No payment proofs submitted yet.</div>'; return; }
 
   box.innerHTML = list.map(o => {
-    const balance = Number(o.total||0) - Number(o.advance_paid||0);
+    const advance = Number(o.advance_paid||0);
+    const balance = Number(o.total||0) - advance;
     return `
-    <div class="card">
+    <div class="admin-card">
       <div class="flex flex-wrap gap-4">
-        <a href="${esc(o.payment_proof_url)}" target="_blank" class="flex-shrink-0">
-          <img src="${esc(o.payment_proof_url)}" class="w-32 h-32 object-cover rounded-xl border-2 border-amber-200">
-        </a>
+        ${o.payment_proof_url
+          ? `<a href="${esc(o.payment_proof_url)}" target="_blank" class="flex-shrink-0"><img src="${esc(o.payment_proof_url)}" class="w-32 h-32 object-cover rounded-xl border-2 border-amber-200"></a>`
+          : '<div class="w-32 h-32 bg-gray-100 rounded-xl flex items-center justify-center text-gray-400 text-xs">No proof</div>'}
         <div class="flex-1 min-w-[220px]">
           <div class="flex justify-between items-start flex-wrap gap-2">
             <div>
               <p class="font-bold text-red-900">${esc(o.order_code)}</p>
               <p class="text-sm">${esc(o.customer_name)} • ${esc(o.phone)}</p>
             </div>
-            <span class="pill ${PAY_COLORS[o.payment_status]||''}">${esc(o.payment_status)}</span>
+            <span class="pill ${PAY_PILL[o.payment_status]||''}">${esc(o.payment_status)}</span>
           </div>
           <div class="grid grid-cols-3 gap-2 mt-3 text-sm">
             <div class="bg-gray-50 rounded-lg p-2"><p class="text-xs text-gray-500">Total</p><p class="font-bold">${money(o.total)}</p></div>
-            <div class="bg-green-50 rounded-lg p-2"><p class="text-xs text-gray-500">Advance</p><p class="font-bold text-green-700">${money(o.advance_paid)}</p></div>
+            <div class="bg-green-50 rounded-lg p-2"><p class="text-xs text-gray-500">Advance</p><p class="font-bold text-green-700">${money(advance)}</p></div>
             <div class="bg-red-50 rounded-lg p-2"><p class="text-xs text-gray-500">Balance</p><p class="font-bold text-red-700">${money(balance)}</p></div>
           </div>
           <div class="flex flex-wrap gap-2 mt-3">
-            <button onclick="verifyPayment(${o.id})" class="btn btn-green">✅ Approve & Verify</button>
-            <button onclick="rejectPayment(${o.id})" class="btn btn-ghost">❌ Reject</button>
-            <button onclick="openOrderModal(${o.id})" class="btn btn-red">🚚 Dispatch</button>
+            <button onclick="verifyPayment(${o.id})" class="admin-btn admin-btn-success">✅ Approve Advance</button>
+            <button onclick="rejectPayment(${o.id})" class="admin-btn admin-btn-ghost">❌ Reject</button>
+            <button onclick="openOrderModal(${o.id})" class="admin-btn admin-btn-primary">⚙️ Manage</button>
           </div>
         </div>
       </div>
@@ -911,9 +1162,9 @@ function renderPayments(){
   }).join('');
 }
 
-async function rejectPayment(id){
+async function rejectPayment(id) {
   if (!confirm('Reject this payment proof?')) return;
-  await sb.from('orders').update({ payment_status:'rejected', updated_at:new Date().toISOString() }).eq('id', id);
+  await supabaseClient.from('orders').update({ payment_status:'rejected', updated_at:new Date().toISOString() }).eq('id', id);
   await loadAll();
 }
 window.rejectPayment = rejectPayment;
@@ -921,44 +1172,44 @@ window.rejectPayment = rejectPayment;
 /* ============================================================
    REVIEWS
 ============================================================ */
-function renderReviews(){
+function renderReviews() {
   const approved = DB.reviews.filter(r => r.is_approved).length;
   const pending  = DB.reviews.length - approved;
   $('#rev-approved').textContent = approved;
   $('#rev-pending').textContent = pending;
 
   const box = $('#reviews-list');
-  if (!DB.reviews.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No reviews yet.</div>'; return; }
+  if (!DB.reviews.length) { box.innerHTML = '<div class="admin-card text-center text-gray-400 py-10">No reviews yet.</div>'; return; }
 
   box.innerHTML = DB.reviews.map(r => {
     const p = DB.products.find(x => x.id === r.product_id);
     return `
-    <div class="card ${r.is_approved ? 'border-l-4 border-green-500' : 'border-l-4 border-yellow-500'}">
+    <div class="admin-card ${r.is_approved ? 'border-l-4 border-green-500' : 'border-l-4 border-yellow-500'}">
       <div class="flex justify-between items-start flex-wrap gap-2">
         <div>
           <p class="font-semibold">${esc(r.customer_name)} <span class="text-xs text-gray-500">${esc(r.phone||'')}</span></p>
           <p class="text-xs text-gray-500">on ${esc(p ? p.name : 'Deleted product')} • ${new Date(r.created_at).toLocaleDateString('en-PK')}</p>
         </div>
-        <div class="text-yellow-500 text-lg">${'★'.repeat(r.rating||0)}<span class="text-gray-300">${'★'.repeat(5-(r.rating||0))}</span></div>
+        <div class="text-amber-500 text-lg">${'★'.repeat(r.rating||0)}<span class="text-gray-300">${'★'.repeat(5-(r.rating||0))}</span></div>
       </div>
       <p class="text-sm text-gray-700 mt-2">${esc(r.comment)}</p>
       <div class="flex gap-2 mt-3">
         ${r.is_approved
-          ? `<button onclick="approveReview(${r.id},false)" class="btn btn-ghost">🙈 Unpublish</button>`
-          : `<button onclick="approveReview(${r.id},true)" class="btn btn-green">✅ Approve</button>`}
-        <button onclick="deleteReview(${r.id})" class="btn btn-ghost text-red-700">🗑 Delete</button>
+          ? `<button onclick="approveReview(${r.id},false)" class="admin-btn admin-btn-ghost">🙈 Unpublish</button>`
+          : `<button onclick="approveReview(${r.id},true)" class="admin-btn admin-btn-success">✅ Approve</button>`}
+        <button onclick="deleteReview(${r.id})" class="admin-btn admin-btn-ghost text-red-700">🗑 Delete</button>
       </div>
     </div>`;
   }).join('');
 }
 
-async function approveReview(id, val){
-  await sb.from('reviews').update({ is_approved: val }).eq('id', id);
+async function approveReview(id, val) {
+  await supabaseClient.from('reviews').update({ is_approved: val }).eq('id', id);
   await loadAll();
 }
-async function deleteReview(id){
+async function deleteReview(id) {
   if (!confirm('Delete this review?')) return;
-  await sb.from('reviews').delete().eq('id', id);
+  await supabaseClient.from('reviews').delete().eq('id', id);
   await loadAll();
 }
 window.approveReview = approveReview;
@@ -969,17 +1220,17 @@ window.deleteReview = deleteReview;
 ============================================================ */
 $('#expense-form').addEventListener('submit', async e => {
   e.preventDefault();
-  await sb.from('expenses').insert({
+  await supabaseClient.from('expenses').insert({
     title: $('#exp-title').value,
     category: $('#exp-category').value,
     amount: Number($('#exp-amount').value) || 0,
-    expense_date: $('#exp-date').value || todayKey()
+    expense_date: $('#exp-date').value || new Date().toISOString().slice(0,10)
   });
   $('#expense-form').reset();
   await loadAll();
 });
 
-function renderExpenses(){
+function renderExpenses() {
   const total = DB.expenses.reduce((a,e) => a + Number(e.amount||0), 0);
   $('#exp-total').textContent = money(total);
   $('#expenses-table').innerHTML = DB.expenses.length ? `
@@ -988,24 +1239,22 @@ function renderExpenses(){
       <tr>
         <td class="text-xs">${esc(e.expense_date)}</td>
         <td class="font-semibold">${esc(e.title)}</td>
-        <td><span class="pill bg-amber-100 text-amber-800">${esc(e.category||'Other')}</span></td>
+        <td><span class="pill pill-dispatched">${esc(e.category||'Other')}</span></td>
         <td class="font-bold text-red-800">${money(e.amount)}</td>
         <td><button onclick="deleteExpense(${e.id})" class="text-red-600 text-xs hover:underline">Delete</button></td>
       </tr>`).join('')}</tbody>`
     : '<tbody><tr><td class="text-gray-400 py-6 text-center">No expenses recorded.</td></tr></tbody>';
 }
-async function deleteExpense(id){
+async function deleteExpense(id) {
   if (!confirm('Delete this expense?')) return;
-  await sb.from('expenses').delete().eq('id', id);
+  await supabaseClient.from('expenses').delete().eq('id', id);
   await loadAll();
 }
 window.deleteExpense = deleteExpense;
 
 /* ============================================================
-   LOCATIONS
+   STORES
 ============================================================ */
-let editingLocId = null;
-
 $('#location-form').addEventListener('submit', async e => {
   e.preventDefault();
   const payload = {
@@ -1018,8 +1267,8 @@ $('#location-form').addEventListener('submit', async e => {
     maps_link: $('#loc-link').value,
     is_active: true
   };
-  if (editingLocId) await sb.from('store_locations').update(payload).eq('id', editingLocId);
-  else await sb.from('store_locations').insert(payload);
+  if (editingLocId) await supabaseClient.from('store_locations').update(payload).eq('id', editingLocId);
+  else await supabaseClient.from('store_locations').insert(payload);
 
   $('#location-form').reset();
   editingLocId = null;
@@ -1033,23 +1282,23 @@ $('#loc-cancel').addEventListener('click', () => {
   $('#loc-cancel').classList.add('hidden');
 });
 
-function renderLocations(){
+function renderLocations() {
   const box = $('#locations-list');
-  if (!DB.locations.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No store locations added yet.</div>'; return; }
+  if (!DB.locations.length) { box.innerHTML = '<div class="admin-card text-center text-gray-400 py-10">No store locations added yet.</div>'; return; }
   box.innerHTML = DB.locations.map(l => `
-    <div class="card flex flex-wrap justify-between items-start gap-3">
+    <div class="admin-card flex flex-wrap justify-between items-start gap-3">
       <div>
         <p class="font-bold text-red-900">📍 ${esc(l.name)}</p>
         <p class="text-sm text-gray-600">${esc(l.address||'')} ${esc(l.city||'')}</p>
         <p class="text-sm text-gray-600">📞 ${esc(l.phone||'')} • 🕒 ${esc(l.hours||'')}</p>
       </div>
       <div class="flex gap-2">
-        <button onclick="editLocation(${l.id})" class="btn btn-ghost">Edit</button>
-        <button onclick="deleteLocation(${l.id})" class="btn btn-ghost text-red-700">Delete</button>
+        <button onclick="editLocation(${l.id})" class="admin-btn admin-btn-ghost">Edit</button>
+        <button onclick="deleteLocation(${l.id})" class="admin-btn admin-btn-ghost text-red-700">Delete</button>
       </div>
     </div>`).join('');
 }
-function editLocation(id){
+function editLocation(id) {
   const l = DB.locations.find(x => x.id === id);
   if (!l) return;
   editingLocId = id;
@@ -1063,9 +1312,9 @@ function editLocation(id){
   $('#loc-cancel').classList.remove('hidden');
   window.scrollTo({ top: 0, behavior:'smooth' });
 }
-async function deleteLocation(id){
+async function deleteLocation(id) {
   if (!confirm('Delete this store location?')) return;
-  await sb.from('store_locations').delete().eq('id', id);
+  await supabaseClient.from('store_locations').delete().eq('id', id);
   await loadAll();
 }
 window.editLocation = editLocation;
@@ -1082,8 +1331,8 @@ $('#ticker-form').addEventListener('submit', async e => {
     sort_order: Number($('#tick-order').value) || 0,
     is_active: true
   };
-  if (id) await sb.from('ticker_messages').update(payload).eq('id', id);
-  else await sb.from('ticker_messages').insert(payload);
+  if (id) await supabaseClient.from('ticker_messages').update(payload).eq('id', id);
+  else await supabaseClient.from('ticker_messages').insert(payload);
 
   $('#ticker-form').reset();
   $('#tick-id').value = '';
@@ -1098,20 +1347,20 @@ $('#tick-cancel').addEventListener('click', () => {
   $('#tick-cancel').classList.add('hidden');
 });
 
-function renderTickers(){
+function renderTickers() {
   const box = $('#ticker-list');
-  if (!DB.tickers.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No ticker messages yet.</div>'; return; }
+  if (!DB.tickers.length) { box.innerHTML = '<div class="admin-card text-center text-gray-400 py-10">No ticker messages yet.</div>'; return; }
   box.innerHTML = DB.tickers.map(t => `
-    <div class="card flex justify-between items-center gap-3 py-3">
+    <div class="admin-card flex justify-between items-center gap-3 py-3">
       <p class="text-sm flex-1 ${t.is_active ? '' : 'line-through text-gray-400'}">${esc(t.message)}</p>
       <div class="flex gap-2 flex-shrink-0">
-        <button onclick="toggleTicker(${t.id},${!t.is_active})" class="btn ${t.is_active ? 'btn-green' : 'btn-ghost'} text-xs">${t.is_active ? 'Active' : 'Hidden'}</button>
-        <button onclick="editTicker(${t.id})" class="btn btn-ghost text-xs">Edit</button>
-        <button onclick="deleteTicker(${t.id})" class="btn btn-ghost text-xs text-red-700">Del</button>
+        <button onclick="toggleTicker(${t.id},${!t.is_active})" class="admin-btn ${t.is_active ? 'admin-btn-success' : 'admin-btn-ghost'} text-xs">${t.is_active ? 'Active' : 'Hidden'}</button>
+        <button onclick="editTicker(${t.id})" class="admin-btn admin-btn-ghost text-xs">Edit</button>
+        <button onclick="deleteTicker(${t.id})" class="admin-btn admin-btn-ghost text-xs text-red-700">Del</button>
       </div>
     </div>`).join('');
 }
-function editTicker(id){
+function editTicker(id) {
   const t = DB.tickers.find(x => x.id === id);
   if (!t) return;
   $('#tick-id').value = t.id;
@@ -1120,8 +1369,8 @@ function editTicker(id){
   $('#tick-cancel').classList.remove('hidden');
   window.scrollTo({ top: 0, behavior:'smooth' });
 }
-async function toggleTicker(id, val){ await sb.from('ticker_messages').update({ is_active: val }).eq('id', id); await loadAll(); }
-async function deleteTicker(id){ if (!confirm('Delete this message?')) return; await sb.from('ticker_messages').delete().eq('id', id); await loadAll(); }
+async function toggleTicker(id, val) { await supabaseClient.from('ticker_messages').update({ is_active: val }).eq('id', id); await loadAll(); }
+async function deleteTicker(id) { if (!confirm('Delete this message?')) return; await supabaseClient.from('ticker_messages').delete().eq('id', id); await loadAll(); }
 window.editTicker = editTicker;
 window.toggleTicker = toggleTicker;
 window.deleteTicker = deleteTicker;
@@ -1132,7 +1381,7 @@ window.deleteTicker = deleteTicker;
 const SETTING_KEYS = ['advance_percent','whatsapp_number','payment_jazzcash','payment_easypaisa',
                       'payment_bank','payment_title','wa_api_url','wa_api_token'];
 
-function renderSettings(){
+function renderSettings() {
   SETTING_KEYS.forEach(k => {
     const el = $('#set_' + k);
     if (el) el.value = DB.settings[k] ?? '';
@@ -1142,11 +1391,16 @@ function renderSettings(){
 $('#settings-form').addEventListener('submit', async e => {
   e.preventDefault();
   const rows = SETTING_KEYS.map(k => ({ key: k, value: $('#set_' + k).value }));
-  const { error } = await sb.from('settings').upsert(rows, { onConflict:'key' });
+  const { error } = await supabaseClient.from('settings').upsert(rows, { onConflict:'key' });
   if (error) { flash('#settings-msg', 'Error: ' + error.message, 'red'); return; }
   flash('#settings-msg', '✅ Settings saved!', 'green');
   await loadAll();
 });
+
+/* ============================================================
+   GLOBALS
+============================================================ */
+window.supabaseClient = supabaseClient;
 </script>
 </body>
 </html>
