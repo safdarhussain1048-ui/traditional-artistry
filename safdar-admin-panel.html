@@ -1,243 +1,1152 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Panel – Traditional Artistry Work</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    body { font-family: 'Poppins', sans-serif; }
-    .form-input { width:100%; padding:0.75rem 1rem; border:1.5px solid #E5E0D5; border-radius:0.75rem; background:#FFFBF5; }
-    .form-input:focus { outline:none; border-color:#C9A227; box-shadow:0 0 0 3px rgba(201,162,39,0.2); }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel – Traditional Artistry Work</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body{font-family:'Poppins',sans-serif;background:#FFFBEB}
+  .form-input{width:100%;padding:.6rem .9rem;border:1.5px solid #E5E0D5;border-radius:.7rem;background:#FFFBF5;font-size:.85rem}
+  .form-input:focus{outline:none;border-color:#C9A227;box-shadow:0 0 0 3px rgba(201,162,39,.2)}
+  .tab-btn{padding:.6rem 1rem;font-size:.82rem;font-weight:600;color:#6B0F0F;white-space:nowrap;border-bottom:3px solid transparent;background:transparent}
+  .tab-btn.active{background:#fff;border-bottom-color:#9B1B1B;color:#9B1B1B}
+  .card{background:#fff;border-radius:1rem;box-shadow:0 4px 20px rgba(107,15,15,.07);padding:1.25rem}
+  .btn{padding:.55rem 1rem;border-radius:.7rem;font-weight:600;font-size:.8rem;transition:.15s}
+  .btn-red{background:#9B1B1B;color:#fff}.btn-red:hover{background:#6B0F0F}
+  .btn-green{background:#1A5F2A;color:#fff}.btn-green:hover{background:#134a20}
+  .btn-ghost{background:#F5E6C8;color:#6B0F0F}.btn-ghost:hover{background:#ecd9b0}
+  .lbl{display:block;font-size:.75rem;font-weight:600;color:#555;margin-bottom:.25rem}
+  .pill{padding:.2rem .6rem;border-radius:9999px;font-size:.68rem;font-weight:700;display:inline-block}
+  table{width:100%;font-size:.83rem;border-collapse:collapse}
+  th{text-align:left;padding:.5rem;color:#6B0F0F;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #F1EAD9}
+  td{padding:.55rem .5rem;border-top:1px solid #F6F1E4;vertical-align:middle}
+  .kpi{background:#fff;border-radius:1rem;padding:1rem;border-left:5px solid #C9A227;box-shadow:0 4px 18px rgba(107,15,15,.06)}
+</style>
 </head>
-<body class="bg-amber-50 min-h-screen">
+<body class="min-h-screen">
 
-  <!-- Login Screen -->
-  <div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
-      <h1 class="text-2xl font-bold text-red-900 mb-2 text-center">Admin Panel</h1>
-      <p class="text-gray-600 text-center mb-6">Traditional Artistry Work</p>
-      <form id="login-form" class="space-y-4">
-        <div>
-          <label class="block text-sm font-medium mb-1">Email</label>
-          <input type="email" id="login-email" required class="form-input" placeholder="your@email.com">
-        </div>
-        <div>
-          <label class="block text-sm font-medium mb-1">Password</label>
-          <input type="password" id="login-password" required class="form-input" placeholder="••••••••">
-        </div>
-        <button type="submit" class="w-full py-3 bg-red-800 text-white font-semibold rounded-xl hover:bg-red-900">Login</button>
-        <p id="login-error" class="text-red-600 text-sm text-center hidden"></p>
-      </form>
-    </div>
-  </div>
-
-  <!-- Admin Dashboard -->
-  <div id="admin-screen" class="hidden">
-    <header class="bg-red-900 text-white p-4 flex justify-between items-center">
-      <h1 class="text-xl font-bold">Admin – Add Products</h1>
-      <div class="flex gap-4 items-center">
-        <a href="index.html" target="_blank" class="text-sm underline">View Website</a>
-        <button id="logout-btn" class="bg-white/20 px-4 py-2 rounded-lg text-sm hover:bg-white/30">Logout</button>
+<!-- ================= LOGIN ================= -->
+<div id="login-screen" class="min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md">
+    <h1 class="text-2xl font-bold text-red-900 mb-1 text-center">Admin Panel</h1>
+    <p class="text-gray-500 text-center mb-6 text-sm">Traditional Artistry Work</p>
+    <form id="login-form" class="space-y-4">
+      <div>
+        <label class="lbl">Email</label>
+        <input type="email" id="login-email" required class="form-input" placeholder="your@email.com">
       </div>
-    </header>
+      <div>
+        <label class="lbl">Password</label>
+        <input type="password" id="login-password" required class="form-input" placeholder="••••••••">
+      </div>
+      <button type="submit" class="w-full py-3 bg-red-800 text-white font-semibold rounded-xl hover:bg-red-900">Login</button>
+      <p id="login-error" class="text-red-600 text-sm text-center hidden"></p>
+    </form>
+  </div>
+</div>
 
-    <div class="max-w-3xl mx-auto p-6">
-      <div class="bg-white rounded-2xl shadow-lg p-6 md:p-8">
-        <h2 class="text-xl font-bold text-red-900 mb-6">Add New Product</h2>
-        <form id="product-form" class="space-y-5">
-          <div>
-            <label class="block text-sm font-medium mb-1">Product Name *</label>
-            <input type="text" id="name" required class="form-input" placeholder="e.g. Classic Balochi Embroidered Dress">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Category *</label>
-            <select id="category" required class="form-input">
-              <option value="balochi-clothes">Balochi Clothes</option>
-              <option value="cultural">Cultural Wear</option>
-              <option value="bags">Handmade Bags</option>
-              <option value="caps">Balochi Caps</option>
-              <option value="gifts">Gift Pens</option>
-              <option value="toys">Kids Toys</option>
-            </select>
-          </div>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<!-- ================= ADMIN ================= -->
+<div id="admin-screen" class="hidden">
+  <header class="bg-red-900 text-white px-4 py-3 flex justify-between items-center sticky top-0 z-40 shadow">
+    <h1 class="text-sm md:text-lg font-bold">Admin – Traditional Artistry Work</h1>
+    <div class="flex gap-3 items-center">
+      <a href="index.html" target="_blank" class="text-xs md:text-sm underline">View Website</a>
+      <button id="refresh-btn" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs md:text-sm hover:bg-white/30">↻ Refresh</button>
+      <button id="logout-btn" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs md:text-sm hover:bg-white/30">Logout</button>
+    </div>
+  </header>
+
+  <nav class="bg-amber-100 border-b border-amber-200 px-1 md:px-4 flex gap-1 overflow-x-auto sticky top-[52px] z-30">
+    <button class="tab-btn active" data-tab="dashboard">📊 Dashboard</button>
+    <button class="tab-btn" data-tab="products">🛍 Products</button>
+    <button class="tab-btn" data-tab="orders">📦 Orders</button>
+    <button class="tab-btn" data-tab="payments">💳 Payments</button>
+    <button class="tab-btn" data-tab="reviews">⭐ Reviews</button>
+    <button class="tab-btn" data-tab="expenses">🧾 Expenses</button>
+    <button class="tab-btn" data-tab="locations">📍 Stores</button>
+    <button class="tab-btn" data-tab="ticker">📢 Ticker</button>
+    <button class="tab-btn" data-tab="settings">⚙️ Settings</button>
+  </nav>
+
+  <main class="p-3 md:p-6 max-w-7xl mx-auto pb-24">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section id="tab-dashboard" class="tab-panel">
+      <div id="dash-kpis" class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5"></div>
+      <div class="grid lg:grid-cols-3 gap-4 mb-5">
+        <div class="card lg:col-span-2">
+          <h3 class="font-bold text-red-900 mb-4 text-sm">📈 Visitors – Last 7 Days</h3>
+          <div id="dash-chart" class="flex items-end justify-between gap-2 h-44"></div>
+        </div>
+        <div class="card">
+          <h3 class="font-bold text-red-900 mb-4 text-sm">🏆 Top Selling Products</h3>
+          <div id="dash-top" class="space-y-3 text-sm"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h3 class="font-bold text-red-900 mb-4 text-sm">🧮 Profit & Loss Summary</h3>
+        <div id="dash-profit" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
+      </div>
+      <div class="card mt-5">
+        <h3 class="font-bold text-red-900 mb-4 text-sm">🕒 Recent Orders</h3>
+        <div class="overflow-x-auto"><table id="dash-orders"></table></div>
+      </div>
+    </section>
+
+    <!-- ---------- PRODUCTS ---------- -->
+    <section id="tab-products" class="tab-panel hidden">
+      <div class="card mb-5">
+        <h2 id="prod-form-title" class="text-lg font-bold text-red-900 mb-4">Add New Product</h2>
+        <form id="product-form" class="space-y-4">
+          <input type="hidden" id="prod-id">
+          <div class="grid md:grid-cols-2 gap-4">
             <div>
-              <label class="block text-sm font-medium mb-1">Price (Rs) *</label>
-              <input type="number" id="price" required min="0" step="1" class="form-input" placeholder="12500">
+              <label class="lbl">Product Name *</label>
+              <input type="text" id="name" required class="form-input" placeholder="Classic Balochi Embroidered Dress">
             </div>
             <div>
-              <label class="block text-sm font-medium mb-1">TCS Cost (Rs) *</label>
-              <input type="number" id="tcs_cost" required min="0" step="1" class="form-input" placeholder="300">
+              <label class="lbl">Category *</label>
+              <select id="category" required class="form-input">
+                <option value="balochi-clothes">Balochi Clothes</option>
+                <option value="cultural">Cultural Wear</option>
+                <option value="bags">Handmade Bags</option>
+                <option value="caps">Balochi Caps</option>
+                <option value="gifts">Gift Pens</option>
+                <option value="toys">Kids Toys</option>
+              </select>
             </div>
-            <div>
-              <label class="block text-sm font-medium mb-1">Total Price (Rs) *</label>
-              <input type="number" id="total_price" required min="0" step="1" class="form-input" placeholder="12800">
-            </div>
+          </div>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+            <div><label class="lbl">Price (Rs) *</label><input type="number" id="price" required min="0" class="form-input" placeholder="16500"></div>
+            <div><label class="lbl">Discount %</label><input type="number" id="discount_percent" min="0" max="90" value="0" class="form-input"></div>
+            <div><label class="lbl">TCS Cost (Rs)</label><input type="number" id="tcs_cost" min="0" value="300" class="form-input"></div>
+            <div><label class="lbl">Final Price (Rs) *</label><input type="number" id="total_price" required min="0" class="form-input"></div>
+            <div><label class="lbl">Cost / Mfg (Rs)</label><input type="number" id="cost_price" min="0" value="0" class="form-input"></div>
+          </div>
+          <p id="margin-hint" class="text-xs text-green-700 font-semibold"></p>
+          <div><label class="lbl">Full Description *</label><textarea id="description" required rows="4" class="form-input"></textarea></div>
+          <div class="grid md:grid-cols-3 gap-4">
+            <div><label class="lbl">Quality</label><input type="text" id="quality" class="form-input" placeholder="Premium hand-embroidered silk"></div>
+            <div><label class="lbl">Badge</label><input type="text" id="badge" class="form-input" placeholder="Bestseller / New / Premium"></div>
+            <div><label class="lbl">Stock Qty</label><input type="number" id="stock" min="0" value="10" class="form-input"></div>
           </div>
           <div>
-            <label class="block text-sm font-medium mb-1">Full Description *</label>
-            <textarea id="description" required rows="4" class="form-input" placeholder="Detailed description of the product..."></textarea>
+            <label class="lbl">Product Image <span id="img-req" class="text-red-600">*</span></label>
+            <input type="file" id="image" accept="image/*" class="form-input">
+            <p class="text-xs text-gray-500 mt-1">Leave empty when editing to keep the current image.</p>
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Quality</label>
-            <input type="text" id="quality" class="form-input" placeholder="e.g. Premium hand-embroidered silk thread">
+          <div class="flex gap-3">
+            <button type="submit" id="submit-btn" class="btn btn-red flex-1 py-3">Add Product</button>
+            <button type="button" id="cancel-edit" class="btn btn-ghost px-6 hidden">Cancel</button>
           </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Badge (optional)</label>
-            <input type="text" id="badge" class="form-input" placeholder="Bestseller / New / Premium">
-          </div>
-          <div>
-            <label class="block text-sm font-medium mb-1">Product Image *</label>
-            <input type="file" id="image" accept="image/*" required class="form-input">
-            <p class="text-xs text-gray-500 mt-1">Upload a clear photo of the product</p>
-          </div>
-          <button type="submit" id="submit-btn" class="w-full py-3 bg-red-800 text-white font-semibold rounded-xl hover:bg-red-900">
-            Add Product
-          </button>
           <p id="form-msg" class="text-center text-sm hidden"></p>
         </form>
       </div>
-
-      <div class="mt-8 bg-white rounded-2xl shadow-lg p-6">
-        <h2 class="text-xl font-bold text-red-900 mb-4">Existing Products</h2>
-        <div id="products-list" class="space-y-3"></div>
+      <div class="card">
+        <h2 class="text-lg font-bold text-red-900 mb-4">All Products (<span id="prod-count">0</span>)</h2>
+        <div class="overflow-x-auto"><table id="products-table"></table></div>
       </div>
-    </div>
-  </div>
+    </section>
 
-  <script>
-    // ========== SUPABASE CONFIG ==========
-    const SUPABASE_URL = 'https://vgjmgbnflyxzpfxqizcz.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnam1nYm5mbHl4enBmeHFpemN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NjM5NjEsImV4cCI6MjEwNTUzOTk2MX0.uzqYMlTllj_0yHJ_Yjpe4yCPUfWY5ZetlQP_71zDlMc';
-
-    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-    // ========== CHECK AUTH ==========
-    async function checkAuth() {
-      const { data: { session } } = await supabaseClient.auth.getSession();
-      if (session) {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('admin-screen').classList.remove('hidden');
-        loadAdminProducts();
-      }
-    }
-    checkAuth();
-
-    // ========== LOGIN ==========
-    document.getElementById('login-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      const errEl = document.getElementById('login-error');
-
-      const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
-      if (error) {
-        errEl.textContent = error.message;
-        errEl.classList.remove('hidden');
-      } else {
-        document.getElementById('login-screen').classList.add('hidden');
-        document.getElementById('admin-screen').classList.remove('hidden');
-        loadAdminProducts();
-      }
-    });
-
-    // ========== LOGOUT ==========
-    document.getElementById('logout-btn').addEventListener('click', async () => {
-      await supabaseClient.auth.signOut();
-      location.reload();
-    });
-
-    // ========== AUTO CALCULATE TOTAL ==========
-    document.getElementById('price').addEventListener('input', calcTotal);
-    document.getElementById('tcs_cost').addEventListener('input', calcTotal);
-    function calcTotal() {
-      const price = Number(document.getElementById('price').value) || 0;
-      const tcs = Number(document.getElementById('tcs_cost').value) || 0;
-      document.getElementById('total_price').value = price + tcs;
-    }
-
-    // ========== ADD PRODUCT ==========
-    document.getElementById('product-form').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const btn = document.getElementById('submit-btn');
-      const msg = document.getElementById('form-msg');
-      btn.disabled = true;
-      btn.textContent = 'Uploading...';
-
-      try {
-        const file = document.getElementById('image').files[0];
-        if (!file) throw new Error('Please select an image');
-
-        const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-        const { error: uploadError } = await supabaseClient.storage
-          .from('product-images')
-          .upload(fileName, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabaseClient.storage.from('product-images').getPublicUrl(fileName);
-        const imageUrl = urlData.publicUrl;
-
-        const { error: insertError } = await supabaseClient.from('products').insert({
-          name: document.getElementById('name').value,
-          category: document.getElementById('category').value,
-          price: Number(document.getElementById('price').value),
-          tcs_cost: Number(document.getElementById('tcs_cost').value),
-          total_price: Number(document.getElementById('total_price').value),
-          description: document.getElementById('description').value,
-          quality: document.getElementById('quality').value || null,
-          badge: document.getElementById('badge').value || null,
-          image_url: imageUrl,
-          is_active: true
-        });
-
-        if (insertError) throw insertError;
-
-        msg.textContent = '✅ Product added successfully!';
-        msg.className = 'text-center text-sm text-green-700';
-        msg.classList.remove('hidden');
-        document.getElementById('product-form').reset();
-        loadAdminProducts();
-      } catch (err) {
-        msg.textContent = 'Error: ' + err.message;
-        msg.className = 'text-center text-sm text-red-600';
-        msg.classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Add Product';
-      }
-    });
-
-    // ========== LOAD PRODUCTS ==========
-    async function loadAdminProducts() {
-      const { data } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
-      const list = document.getElementById('products-list');
-      if (!data || data.length === 0) {
-        list.innerHTML = '<p class="text-gray-500">No products yet. Add your first product above.</p>';
-        return;
-      }
-      list.innerHTML = data.map(p => `
-        <div class="flex items-center gap-4 p-3 border rounded-xl">
-          <img src="${p.image_url}" class="w-16 h-16 object-cover rounded-lg" onerror="this.style.display='none'">
-          <div class="flex-1">
-            <p class="font-semibold">${p.name}</p>
-            <p class="text-sm text-gray-600">Rs. ${Number(p.total_price).toLocaleString()} • ${p.category}</p>
-          </div>
-          <button onclick="deleteProduct(${p.id})" class="text-red-600 text-sm hover:underline">Delete</button>
+    <!-- ---------- ORDERS ---------- -->
+    <section id="tab-orders" class="tab-panel hidden">
+      <div class="card mb-4">
+        <div class="flex flex-wrap gap-2 items-center">
+          <input id="order-search" class="form-input max-w-xs" placeholder="Search order code / name / phone">
+          <select id="order-filter" class="form-input max-w-[180px]">
+            <option value="all">All Orders</option>
+            <option value="new">New</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="packed">Packed</option>
+            <option value="dispatched">Dispatched</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
         </div>
-      `).join('');
+      </div>
+      <div id="orders-list" class="space-y-4"></div>
+    </section>
+
+    <!-- ---------- PAYMENTS ---------- -->
+    <section id="tab-payments" class="tab-panel hidden">
+      <div class="card mb-4">
+        <h2 class="text-lg font-bold text-red-900">💳 Advance Payment Verification</h2>
+        <p class="text-xs text-gray-500 mt-1">Verify the customer's 50% advance screenshot before dispatching via TCS.</p>
+      </div>
+      <div id="payments-list" class="space-y-4"></div>
+    </section>
+
+    <!-- ---------- REVIEWS ---------- -->
+    <section id="tab-reviews" class="tab-panel hidden">
+      <div class="card mb-4 flex flex-wrap justify-between items-center gap-3">
+        <h2 class="text-lg font-bold text-red-900">⭐ Customer Reviews</h2>
+        <div class="flex gap-2 text-xs">
+          <span class="pill bg-yellow-100 text-yellow-800">Pending: <b id="rev-pending">0</b></span>
+          <span class="pill bg-green-100 text-green-800">Approved: <b id="rev-approved">0</b></span>
+        </div>
+      </div>
+      <div id="reviews-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ---------- EXPENSES ---------- -->
+    <section id="tab-expenses" class="tab-panel hidden">
+      <div class="card mb-5">
+        <h2 class="text-lg font-bold text-red-900 mb-4">🧾 Add Expense</h2>
+        <form id="expense-form" class="grid md:grid-cols-5 gap-3 items-end">
+          <div class="md:col-span-2"><label class="lbl">Title *</label><input id="exp-title" required class="form-input" placeholder="Thread purchase"></div>
+          <div><label class="lbl">Category</label>
+            <select id="exp-category" class="form-input">
+              <option>Raw Material</option><option>Packaging</option><option>Shipping/TCS</option>
+              <option>Marketing</option><option>Salary</option><option>Utilities</option><option>Other</option>
+            </select>
+          </div>
+          <div><label class="lbl">Amount (Rs) *</label><input id="exp-amount" type="number" min="0" required class="form-input"></div>
+          <div><label class="lbl">Date</label><input id="exp-date" type="date" class="form-input"></div>
+          <div class="md:col-span-5"><button class="btn btn-red w-full py-3">Add Expense</button></div>
+        </form>
+      </div>
+      <div class="card">
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-bold text-red-900">Expense Records</h2>
+          <span class="text-sm font-bold text-red-800">Total: <span id="exp-total">Rs. 0</span></span>
+        </div>
+        <div class="overflow-x-auto"><table id="expenses-table"></table></div>
+      </div>
+    </section>
+
+    <!-- ---------- LOCATIONS ---------- -->
+    <section id="tab-locations" class="tab-panel hidden">
+      <div class="card mb-5">
+        <h2 class="text-lg font-bold text-red-900 mb-4">📍 Add Physical Store / Live Location</h2>
+        <form id="location-form" class="space-y-3">
+          <input type="hidden" id="loc-id">
+          <div class="grid md:grid-cols-2 gap-3">
+            <div><label class="lbl">Store Name *</label><input id="loc-name" required class="form-input" placeholder="Traditional Artistry Work – Main Store"></div>
+            <div><label class="lbl">City</label><input id="loc-city" class="form-input" placeholder="Kohlu"></div>
+          </div>
+          <div><label class="lbl">Full Address</label><input id="loc-address" class="form-input" placeholder="Manjhara, Tehsil Mawand, District Kohlu, Balochistan"></div>
+          <div class="grid md:grid-cols-2 gap-3">
+            <div><label class="lbl">Phone / WhatsApp</label><input id="loc-phone" class="form-input" placeholder="0333-3882131"></div>
+            <div><label class="lbl">Opening Hours</label><input id="loc-hours" class="form-input" placeholder="Mon–Sat: 9:00 AM – 8:00 PM"></div>
+          </div>
+          <div><label class="lbl">Google Maps Embed URL</label>
+            <input id="loc-map" class="form-input" placeholder="https://www.google.com/maps/embed?pb=...">
+            <p class="text-xs text-gray-500 mt-1">Google Maps → Share → Embed a map → copy the <b>src</b> link only.</p>
+          </div>
+          <div><label class="lbl">Google Maps Direction Link</label><input id="loc-link" class="form-input" placeholder="https://maps.app.goo.gl/..."></div>
+          <div class="flex gap-3">
+            <button class="btn btn-red flex-1 py-3">Save Store</button>
+            <button type="button" id="loc-cancel" class="btn btn-ghost px-6 hidden">Cancel</button>
+          </div>
+        </form>
+      </div>
+      <div id="locations-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ---------- TICKER ---------- -->
+    <section id="tab-ticker" class="tab-panel hidden">
+      <div class="card mb-5">
+        <h2 class="text-lg font-bold text-red-900 mb-4">📢 Running Line Messages (Top Bar)</h2>
+        <form id="ticker-form" class="flex flex-col md:flex-row gap-3">
+          <input type="hidden" id="tick-id">
+          <input id="tick-message" required class="form-input flex-1" placeholder="✨ Handmade with love in Balochistan – 100% authentic craftsmanship">
+          <input id="tick-order" type="number" value="0" class="form-input max-w-[110px]" placeholder="Order">
+          <button class="btn btn-red px-6">Save</button>
+          <button type="button" id="tick-cancel" class="btn btn-ghost px-4 hidden">Cancel</button>
+        </form>
+        <p class="text-xs text-gray-500 mt-2">These messages scroll continuously across the top of your website.</p>
+      </div>
+      <div id="ticker-list" class="space-y-2"></div>
+    </section>
+
+    <!-- ---------- SETTINGS ---------- -->
+    <section id="tab-settings" class="tab-panel hidden">
+      <div class="card">
+        <h2 class="text-lg font-bold text-red-900 mb-4">⚙️ Store Settings</h2>
+        <form id="settings-form" class="grid md:grid-cols-2 gap-4">
+          <div><label class="lbl">Advance Payment % (required before delivery)</label><input id="set_advance_percent" type="number" min="0" max="100" class="form-input" placeholder="50"></div>
+          <div><label class="lbl">Business WhatsApp Number</label><input id="set_whatsapp_number" class="form-input" placeholder="923333882131"></div>
+          <div><label class="lbl">JazzCash Number</label><input id="set_payment_jazzcash" class="form-input" placeholder="0333-3882131"></div>
+          <div><label class="lbl">EasyPaisa Number</label><input id="set_payment_easypaisa" class="form-input" placeholder="0333-3882131"></div>
+          <div><label class="lbl">Bank Name & Account</label><input id="set_payment_bank" class="form-input" placeholder="HBL – 1234 5678 9012 3456"></div>
+          <div><label class="lbl">Account Title</label><input id="set_payment_title" class="form-input" placeholder="Safdar Hussain"></div>
+          <div class="md:col-span-2">
+            <label class="lbl">WhatsApp API Webhook (optional – for fully automatic sending)</label>
+            <input id="set_wa_api_url" class="form-input" placeholder="https://api.ultramsg.com/instanceXXXX/messages/chat">
+            <p class="text-xs text-gray-500 mt-1">Leave empty to use the free “click to send” WhatsApp method. With UltraMsg / WhatsApp Cloud API the message sends instantly with zero clicks.</p>
+          </div>
+          <div class="md:col-span-2"><label class="lbl">WhatsApp API Token</label><input id="set_wa_api_token" class="form-input" placeholder="token"></div>
+          <div class="md:col-span-2"><button class="btn btn-red w-full py-3">Save Settings</button></div>
+          <p id="settings-msg" class="md:col-span-2 text-center text-sm hidden"></p>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Edit Order Modal -->
+<div id="order-modal" class="fixed inset-0 z-50 hidden">
+  <div class="absolute inset-0 bg-black/50" onclick="closeOrderModal()"></div>
+  <div class="absolute inset-0 flex items-start justify-center p-4 overflow-y-auto">
+    <div id="order-modal-body" class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8 p-6"></div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SUPABASE
+============================================================ */
+const SUPABASE_URL = 'https://vgjmgbnflyxzpfxqizcz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZnam1nYm5mbHl4enBmeHFpemN6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk5NjM5NjEsImV4cCI6MjEwNTUzOTk2MX0.uzqYMlTllj_0yHJ_Yjpe4yCPUfWY5ZetlQP_71zDlMc';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const $  = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const money = n => 'Rs. ' + Number(n || 0).toLocaleString('en-PK');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const todayKey = () => new Date().toISOString().slice(0,10);
+
+const DB = { products:[], orders:[], reviews:[], expenses:[], visits:[], locations:[], tickers:[], settings:{} };
+
+/* ============================================================
+   AUTH
+============================================================ */
+(async function checkAuth(){
+  const { data:{ session } } = await sb.auth.getSession();
+  if (session) enterAdmin();
+})();
+
+$('#login-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const errEl = $('#login-error');
+  const { error } = await sb.auth.signInWithPassword({
+    email: $('#login-email').value,
+    password: $('#login-password').value
+  });
+  if (error) { errEl.textContent = error.message; errEl.classList.remove('hidden'); }
+  else enterAdmin();
+});
+
+$('#logout-btn').addEventListener('click', async () => { await sb.auth.signOut(); location.reload(); });
+$('#refresh-btn').addEventListener('click', () => loadAll(true));
+
+function enterAdmin(){
+  $('#login-screen').classList.add('hidden');
+  $('#admin-screen').classList.remove('hidden');
+  loadAll();
+}
+
+/* ============================================================
+   TABS
+============================================================ */
+$$('.tab-btn').forEach(b => b.addEventListener('click', () => {
+  $$('.tab-btn').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  $$('.tab-panel').forEach(p => p.classList.add('hidden'));
+  $('#tab-' + b.dataset.tab).classList.remove('hidden');
+  if (b.dataset.tab === 'dashboard') renderDashboard();
+}));
+
+/* ============================================================
+   LOAD DATA
+============================================================ */
+async function loadAll(showMsg){
+  try {
+    const [p,o,r,e,v,l,t,s] = await Promise.all([
+      sb.from('products').select('*').order('created_at',{ascending:false}),
+      sb.from('orders').select('*').order('created_at',{ascending:false}).limit(500),
+      sb.from('reviews').select('*').order('created_at',{ascending:false}).limit(500),
+      sb.from('expenses').select('*').order('expense_date',{ascending:false}).limit(500),
+      sb.from('site_visits').select('created_at,device').order('created_at',{ascending:false}).limit(8000),
+      sb.from('store_locations').select('*').order('id'),
+      sb.from('ticker_messages').select('*').order('sort_order'),
+      sb.from('settings').select('*')
+    ]);
+    DB.products  = p.data || [];
+    DB.orders    = o.data || [];
+    DB.reviews   = r.data || [];
+    DB.expenses  = e.data || [];
+    DB.visits    = v.data || [];
+    DB.locations = l.data || [];
+    DB.tickers   = t.data || [];
+    DB.settings  = Object.fromEntries((s.data || []).map(x => [x.key, x.value]));
+    renderAll();
+    if (showMsg) flash('#form-msg','Data refreshed ✅','green');
+  } catch (err) {
+    console.error(err);
+    alert('Load error: ' + err.message);
+  }
+}
+
+function renderAll(){
+  renderDashboard(); renderProducts(); renderOrders();
+  renderPayments(); renderReviews(); renderExpenses();
+  renderLocations(); renderTickers(); renderSettings();
+}
+
+/* ============================================================
+   HELPERS
+============================================================ */
+function flash(sel, text, color){
+  const el = $(sel);
+  if (!el) return;
+  el.textContent = text;
+  el.className = 'text-center text-sm ' + (color === 'green' ? 'text-green-700' : 'text-red-600');
+  el.classList.remove('hidden');
+  setTimeout(() => el.classList.add('hidden'), 4000);
+}
+function normPhone(p){
+  let d = String(p || '').replace(/\D/g,'');
+  if (d.startsWith('0')) d = '92' + d.slice(1);
+  else if (!d.startsWith('92') && d.length === 10) d = '92' + d;
+  return d;
+}
+function waLink(phone, msg){
+  return 'https://wa.me/' + normPhone(phone) + '?text=' + encodeURIComponent(msg);
+}
+
+/* Send WhatsApp – automatic if API configured, otherwise opens wa.me */
+async function sendWhatsApp(phone, message){
+  const url   = DB.settings.wa_api_url;
+  const token = DB.settings.wa_api_token;
+  if (url && token) {
+    try {
+      const res = await fetch(url, {
+        method:'POST',
+        headers:{ 'Content-Type':'application/json' },
+        body: JSON.stringify({ token, to: normPhone(phone), body: message })
+      });
+      if (res.ok) return { ok:true, auto:true };
+    } catch(e){ console.warn('WA API failed, falling back', e); }
+  }
+  window.open(waLink(phone, message), '_blank');
+  return { ok:true, auto:false };
+}
+
+/* Order profit */
+function orderRevenue(o){ return (o.items||[]).reduce((a,i)=>a + Number(i.price||0)*Number(i.qty||0), 0); }
+function orderCost(o){    return (o.items||[]).reduce((a,i)=>a + Number(i.cost||0)*Number(i.qty||0), 0); }
+
+const STATUS_COLORS = {
+  new:'bg-blue-100 text-blue-800', confirmed:'bg-indigo-100 text-indigo-800',
+  packed:'bg-purple-100 text-purple-800', dispatched:'bg-amber-100 text-amber-800',
+  delivered:'bg-green-100 text-green-800', cancelled:'bg-red-100 text-red-800'
+};
+const PAY_COLORS = {
+  pending:'bg-gray-200 text-gray-700', submitted:'bg-yellow-100 text-yellow-800',
+  verified:'bg-green-100 text-green-800', rejected:'bg-red-100 text-red-800'
+};
+
+/* ============================================================
+   DASHBOARD
+============================================================ */
+function renderDashboard(){
+  const today = todayKey();
+  const visitsToday = DB.visits.filter(v => v.created_at.slice(0,10) === today).length;
+  const active = DB.orders.filter(o => o.order_status !== 'cancelled');
+
+  const revenue  = active.reduce((a,o) => a + orderRevenue(o), 0);
+  const prodCost = active.reduce((a,o) => a + orderCost(o), 0);
+  const expenses = DB.expenses.reduce((a,e) => a + Number(e.amount||0), 0);
+  const netProfit = revenue - prodCost - expenses;
+
+  const pending  = DB.orders.filter(o => !['delivered','cancelled'].includes(o.order_status)).length;
+  const delivered= DB.orders.filter(o => o.order_status === 'delivered').length;
+  const awaitingPay = DB.orders.filter(o => o.payment_status === 'submitted').length;
+  const pendingReviews = DB.reviews.filter(r => !r.is_approved).length;
+
+  $('#dash-kpis').innerHTML = `
+    <div class="kpi"><div class="text-2xl font-bold text-red-800">${visitsToday}</div><div class="text-xs text-gray-500 font-semibold">Visitors Today</div></div>
+    <div class="kpi" style="border-left-color:#0D7377"><div class="text-2xl font-bold text-teal-700">${DB.visits.length}</div><div class="text-xs text-gray-500 font-semibold">Total Visits Logged</div></div>
+    <div class="kpi" style="border-left-color:#9B1B1B"><div class="text-2xl font-bold text-red-800">${DB.orders.length}</div><div class="text-xs text-gray-500 font-semibold">Total Orders</div></div>
+    <div class="kpi" style="border-left-color:#1A5F2A"><div class="text-2xl font-bold text-green-700">${money(revenue)}</div><div class="text-xs text-gray-500 font-semibold">Gross Revenue</div></div>
+    <div class="kpi" style="border-left-color:#D94F70"><div class="text-2xl font-bold text-pink-700">${pending}</div><div class="text-xs text-gray-500 font-semibold">Orders In Progress</div></div>
+    <div class="kpi" style="border-left-color:#C9A227"><div class="text-2xl font-bold text-yellow-700">${awaitingPay}</div><div class="text-xs text-gray-500 font-semibold">Payments To Verify</div></div>
+    <div class="kpi" style="border-left-color:#6B0F0F"><div class="text-2xl font-bold text-red-900">${delivered}</div><div class="text-xs text-gray-500 font-semibold">Delivered</div></div>
+    <div class="kpi" style="border-left-color:#9333ea"><div class="text-2xl font-bold text-purple-700">${pendingReviews}</div><div class="text-xs text-gray-500 font-semibold">Reviews To Approve</div></div>
+  `;
+
+  /* ---- 7 day chart ---- */
+  const days = [];
+  for (let i = 6; i >= 0; i--){
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push({ key: d.toISOString().slice(0,10), label: d.toLocaleDateString('en',{weekday:'short'}), count: 0 });
+  }
+  DB.visits.forEach(v => {
+    const k = v.created_at.slice(0,10);
+    const d = days.find(x => x.key === k);
+    if (d) d.count++;
+  });
+  const max = Math.max(1, ...days.map(d => d.count));
+  $('#dash-chart').innerHTML = days.map(d => `
+    <div class="flex-1 flex flex-col items-center justify-end h-full gap-2">
+      <span class="text-xs font-bold text-red-800">${d.count}</span>
+      <div class="w-full rounded-t-lg bg-gradient-to-t from-red-800 to-amber-400 transition-all"
+           style="height:${Math.max(4,(d.count/max)*100)}%"></div>
+      <span class="text-[10px] text-gray-500 font-semibold">${d.label}</span>
+    </div>`).join('');
+
+  /* ---- Top products ---- */
+  const sales = {};
+  active.forEach(o => (o.items||[]).forEach(it => {
+    const k = it.name || 'Unknown';
+    sales[k] = sales[k] || { qty:0, rev:0 };
+    sales[k].qty += Number(it.qty||0);
+    sales[k].rev += Number(it.price||0)*Number(it.qty||0);
+  }));
+  const top = Object.entries(sales).sort((a,b) => b[1].qty - a[1].qty).slice(0,5);
+  $('#dash-top').innerHTML = top.length ? top.map(([n,v],i) => `
+    <div class="flex items-center gap-3">
+      <span class="w-6 h-6 rounded-full bg-amber-100 text-red-800 text-xs font-bold flex items-center justify-center">${i+1}</span>
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-xs truncate">${esc(n)}</p>
+        <p class="text-[11px] text-gray-500">${v.qty} sold • ${money(v.rev)}</p>
+      </div>
+    </div>`).join('') : '<p class="text-gray-400 text-xs">No sales yet.</p>';
+
+  /* ---- Profit ---- */
+  $('#dash-profit').innerHTML = `
+    <div class="p-4 rounded-xl bg-green-50 border border-green-200">
+      <p class="text-xs font-semibold text-green-800">Gross Revenue</p>
+      <p class="text-xl font-bold text-green-700">${money(revenue)}</p>
+    </div>
+    <div class="p-4 rounded-xl bg-orange-50 border border-orange-200">
+      <p class="text-xs font-semibold text-orange-800">Manufacturing Cost</p>
+      <p class="text-xl font-bold text-orange-700">− ${money(prodCost)}</p>
+    </div>
+    <div class="p-4 rounded-xl bg-red-50 border border-red-200">
+      <p class="text-xs font-semibold text-red-800">Business Expenses</p>
+      <p class="text-xl font-bold text-red-700">− ${money(expenses)}</p>
+    </div>
+    <div class="p-4 rounded-xl ${netProfit >= 0 ? 'bg-emerald-100 border-emerald-300' : 'bg-red-100 border-red-300'} border-2">
+      <p class="text-xs font-semibold text-gray-700">NET PROFIT</p>
+      <p class="text-xl font-bold ${netProfit >= 0 ? 'text-emerald-800' : 'text-red-800'}">${money(netProfit)}</p>
+    </div>`;
+
+  /* ---- Recent orders ---- */
+  const recent = DB.orders.slice(0,6);
+  $('#dash-orders').innerHTML = recent.length ? `
+    <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead>
+    <tbody>${recent.map(o => `
+      <tr>
+        <td class="font-semibold text-red-800">${esc(o.order_code)}</td>
+        <td>${esc(o.customer_name)}<br><span class="text-xs text-gray-500">${esc(o.phone)}</span></td>
+        <td class="font-semibold">${money(o.total)}</td>
+        <td><span class="pill ${PAY_COLORS[o.payment_status]||''}">${esc(o.payment_status)}</span></td>
+        <td><span class="pill ${STATUS_COLORS[o.order_status]||''}">${esc(o.order_status)}</span></td>
+      </tr>`).join('')}</tbody>`
+    : '<tbody><tr><td class="text-gray-400 py-4">No orders yet.</td></tr></tbody>';
+}
+
+/* ============================================================
+   PRODUCTS
+============================================================ */
+function calcFinal(){
+  const price = Number($('#price').value) || 0;
+  const disc  = Number($('#discount_percent').value) || 0;
+  const tcs   = Number($('#tcs_cost').value) || 0;
+  const final = Math.round(price * (1 - disc/100)) + tcs;
+  $('#total_price').value = final;
+
+  const cost = Number($('#cost_price').value) || 0;
+  const margin = final - cost;
+  const pct = final > 0 ? ((margin/final)*100).toFixed(1) : 0;
+  $('#margin-hint').textContent = cost > 0
+    ? `💰 Profit per unit: ${money(margin)} (${pct}% margin)`
+    : '';
+}
+['price','discount_percent','tcs_cost','cost_price'].forEach(id =>
+  $('#'+id).addEventListener('input', calcFinal));
+
+let editingProductId = null;
+
+$('#product-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const btn = $('#submit-btn');
+  btn.disabled = true; btn.textContent = 'Saving...';
+
+  try {
+    const file = $('#image').files[0];
+    let imageUrl = null;
+
+    if (file) {
+      const fileName = `${Date.now()}_${file.name.replace(/[^a-zA-Z0-9.]/g,'_')}`;
+      const { error: upErr } = await sb.storage.from('product-images').upload(fileName, file);
+      if (upErr) throw upErr;
+      imageUrl = sb.storage.from('product-images').getPublicUrl(fileName).data.publicUrl;
     }
 
-    async function deleteProduct(id) {
-      if (!confirm('Delete this product?')) return;
-      await supabaseClient.from('products').delete().eq('id', id);
-      loadAdminProducts();
+    const payload = {
+      name: $('#name').value,
+      category: $('#category').value,
+      price: Number($('#price').value),
+      discount_percent: Number($('#discount_percent').value) || 0,
+      tcs_cost: Number($('#tcs_cost').value) || 0,
+      total_price: Number($('#total_price').value),
+      cost_price: Number($('#cost_price').value) || 0,
+      description: $('#description').value,
+      quality: $('#quality').value || null,
+      badge: $('#badge').value || null,
+      stock: Number($('#stock').value) || 0,
+      is_active: true
+    };
+    if (imageUrl) payload.image_url = imageUrl;
+
+    let error;
+    if (editingProductId) {
+      ({ error } = await sb.from('products').update(payload).eq('id', editingProductId));
+    } else {
+      if (!imageUrl) throw new Error('Please select a product image');
+      ({ error } = await sb.from('products').insert(payload));
     }
-    window.deleteProduct = deleteProduct;
-  </script>
+    if (error) throw error;
+
+    flash('#form-msg', editingProductId ? '✅ Product updated!' : '✅ Product added!', 'green');
+    resetProductForm();
+    await loadAll();
+  } catch (err) {
+    flash('#form-msg', 'Error: ' + err.message, 'red');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = editingProductId ? 'Update Product' : 'Add Product';
+  }
+});
+
+function resetProductForm(){
+  $('#product-form').reset();
+  $('#prod-id').value = '';
+  $('#discount_percent').value = 0;
+  $('#tcs_cost').value = 300;
+  $('#cost_price').value = 0;
+  $('#stock').value = 10;
+  editingProductId = null;
+  $('#prod-form-title').textContent = 'Add New Product';
+  $('#submit-btn').textContent = 'Add Product';
+  $('#cancel-edit').classList.add('hidden');
+  $('#img-req').classList.remove('hidden');
+  $('#margin-hint').textContent = '';
+}
+$('#cancel-edit').addEventListener('click', resetProductForm);
+
+function editProduct(id){
+  const p = DB.products.find(x => x.id === id);
+  if (!p) return;
+  editingProductId = id;
+  $('#name').value = p.name || '';
+  $('#category').value = p.category || 'balochi-clothes';
+  $('#price').value = p.price || 0;
+  $('#discount_percent').value = p.discount_percent || 0;
+  $('#tcs_cost').value = p.tcs_cost || 0;
+  $('#total_price').value = p.total_price || 0;
+  $('#cost_price').value = p.cost_price || 0;
+  $('#description').value = p.description || '';
+  $('#quality').value = p.quality || '';
+  $('#badge').value = p.badge || '';
+  $('#stock').value = p.stock ?? 10;
+  $('#prod-form-title').textContent = '✏️ Edit Product – ' + p.name;
+  $('#submit-btn').textContent = 'Update Product';
+  $('#cancel-edit').classList.remove('hidden');
+  $('#img-req').classList.add('hidden');
+  calcFinal();
+  window.scrollTo({ top: 0, behavior:'smooth' });
+}
+
+function renderProducts(){
+  $('#prod-count').textContent = DB.products.length;
+  $('#products-table').innerHTML = DB.products.length ? `
+    <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Discount</th><th>Final</th><th>Cost</th><th>Stock</th><th>Actions</th></tr></thead>
+    <tbody>${DB.products.map(p => `
+      <tr>
+        <td><img src="${esc(p.image_url)}" class="w-12 h-12 object-cover rounded-lg" onerror="this.style.visibility='hidden'"></td>
+        <td class="font-semibold max-w-[180px]">${esc(p.name)}</td>
+        <td class="text-xs">${esc(p.category)}</td>
+        <td>${money(p.price)}</td>
+        <td>${p.discount_percent ? `<span class="pill bg-pink-100 text-pink-700">${p.discount_percent}% OFF</span>` : '—'}</td>
+        <td class="font-bold text-red-800">${money(p.total_price)}</td>
+        <td class="text-xs text-gray-500">${money(p.cost_price)}</td>
+        <td class="${Number(p.stock) <= 2 ? 'text-red-600 font-bold' : ''}">${p.stock ?? '—'}</td>
+        <td class="whitespace-nowrap">
+          <button onclick="editProduct(${p.id})" class="text-blue-600 hover:underline text-xs font-semibold mr-2">Edit</button>
+          <button onclick="deleteProduct(${p.id})" class="text-red-600 hover:underline text-xs font-semibold">Delete</button>
+        </td>
+      </tr>`).join('')}</tbody>`
+    : '<tbody><tr><td class="text-gray-400 py-6 text-center">No products yet.</td></tr></tbody>';
+}
+
+async function deleteProduct(id){
+  if (!confirm('Delete this product permanently?')) return;
+  await sb.from('products').delete().eq('id', id);
+  await loadAll();
+}
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
+
+/* ============================================================
+   ORDERS
+============================================================ */
+$('#order-search').addEventListener('input', renderOrders);
+$('#order-filter').addEventListener('change', renderOrders);
+
+function renderOrders(){
+  const q = ($('#order-search').value || '').toLowerCase().trim();
+  const f = $('#order-filter').value;
+
+  let list = DB.orders;
+  if (f !== 'all') list = list.filter(o => o.order_status === f);
+  if (q) list = list.filter(o =>
+    (o.order_code||'').toLowerCase().includes(q) ||
+    (o.customer_name||'').toLowerCase().includes(q) ||
+    (o.phone||'').includes(q));
+
+  const box = $('#orders-list');
+  if (!list.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No orders found.</div>'; return; }
+
+  box.innerHTML = list.map(o => {
+    const balance = Number(o.total||0) - Number(o.advance_paid||0);
+    return `
+    <div class="card">
+      <div class="flex flex-wrap justify-between items-start gap-3 mb-3">
+        <div>
+          <p class="font-bold text-red-900 text-lg">${esc(o.order_code)}</p>
+          <p class="text-xs text-gray-500">${new Date(o.created_at).toLocaleString('en-PK')}</p>
+        </div>
+        <div class="flex gap-2 flex-wrap">
+          <span class="pill ${PAY_COLORS[o.payment_status]||''}">💳 ${esc(o.payment_status)}</span>
+          <span class="pill ${STATUS_COLORS[o.order_status]||''}">📦 ${esc(o.order_status)}</span>
+          ${o.tcs_tracking ? `<span class="pill bg-teal-100 text-teal-800">TCS: ${esc(o.tcs_tracking)}</span>` : ''}
+        </div>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-3 text-sm mb-3">
+        <div class="bg-amber-50 rounded-xl p-3">
+          <p class="font-semibold text-red-900 mb-1">👤 Customer</p>
+          <p>${esc(o.customer_name)}</p>
+          <p class="text-gray-600">📞 ${esc(o.phone)}</p>
+          <p class="text-gray-600">🏠 ${esc(o.city || '')} ${esc(o.address || '')}</p>
+        </div>
+        <div class="bg-green-50 rounded-xl p-3">
+          <p class="font-semibold text-green-900 mb-1">💰 Payment</p>
+          <p>Total: <b>${money(o.total)}</b></p>
+          <p>Advance received: <b class="text-green-700">${money(o.advance_paid)}</b></p>
+          <p>Balance on delivery: <b class="text-red-700">${money(balance)}</b></p>
+        </div>
+      </div>
+
+      <div class="mb-3">
+        <p class="text-xs font-semibold text-gray-500 mb-1">ITEMS</p>
+        <div class="flex flex-wrap gap-2">
+          ${(o.items||[]).map(i => `<span class="text-xs bg-gray-100 px-2 py-1 rounded-lg">${esc(i.name)} × ${i.qty} — ${money(i.price)}</span>`).join('')}
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-2 pt-2 border-t border-amber-100">
+        ${o.payment_proof_url ? `<a href="${esc(o.payment_proof_url)}" target="_blank" class="btn btn-ghost">🧾 View Payment Proof</a>` : ''}
+        ${o.payment_status !== 'verified' && o.payment_proof_url ? `<button onclick="verifyPayment(${o.id})" class="btn btn-green">✅ Verify Payment</button>` : ''}
+        <button onclick="openOrderModal(${o.id})" class="btn btn-red">⚙️ Manage / Dispatch</button>
+        <a href="${waLink(o.phone, 'Assalam-o-Alaikum ' + o.customer_name + '! Regarding your order ' + o.order_code + ' from Traditional Artistry Work.')}" target="_blank" class="btn btn-ghost">💬 Chat</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function verifyPayment(id){
+  await sb.from('orders').update({ payment_status:'verified', updated_at:new Date().toISOString() }).eq('id', id);
+  await loadAll();
+}
+window.verifyPayment = verifyPayment;
+
+/* ---------- Order manage modal ---------- */
+function openOrderModal(id){
+  const o = DB.orders.find(x => x.id === id);
+  if (!o) return;
+  const balance = Number(o.total||0) - Number(o.advance_paid||0);
+
+  $('#order-modal-body').innerHTML = `
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="text-lg font-bold text-red-900">Order ${esc(o.order_code)}</h3>
+      <button onclick="closeOrderModal()" class="text-2xl leading-none text-gray-400 hover:text-gray-700">&times;</button>
+    </div>
+
+    <div class="space-y-4 text-sm">
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="lbl">Order Status</label>
+          <select id="m-status" class="form-input">
+            ${['new','confirmed','packed','dispatched','delivered','cancelled'].map(s =>
+              `<option value="${s}" ${o.order_status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div><label class="lbl">Payment Status</label>
+          <select id="m-pay" class="form-input">
+            ${['pending','submitted','verified','rejected'].map(s =>
+              `<option value="${s}" ${o.payment_status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div><label class="lbl">Advance Received (Rs)</label>
+          <input id="m-advance" type="number" min="0" class="form-input" value="${o.advance_paid || 0}"></div>
+        <div><label class="lbl">Balance on Delivery (Rs)</label>
+          <input id="m-balance" type="number" class="form-input" value="${balance}" readonly></div>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+        <label class="lbl">🚚 TCS Tracking ID</label>
+        <input id="m-tcs" class="form-input" value="${esc(o.tcs_tracking||'')}" placeholder="e.g. 12345678901">
+        <p class="text-xs text-gray-500 mt-1">When you dispatch, enter the TCS ID and press the green button – the customer receives it instantly on WhatsApp.</p>
+      </div>
+
+      <div><label class="lbl">Internal Note</label>
+        <textarea id="m-note" rows="2" class="form-input">${esc(o.admin_note||'')}</textarea></div>
+
+      <div class="flex flex-wrap gap-2 pt-2">
+        <button onclick="saveOrder(${o.id})" class="btn btn-ghost flex-1 py-3">💾 Save Changes</button>
+        <button onclick="dispatchOrder(${o.id})" class="btn btn-green flex-1 py-3">🚚 Dispatch & Send TCS ID</button>
+      </div>
+    </div>`;
+
+  $('#order-modal').classList.remove('hidden');
+}
+function closeOrderModal(){ $('#order-modal').classList.add('hidden'); }
+window.openOrderModal = openOrderModal;
+window.closeOrderModal = closeOrderModal;
+
+async function saveOrder(id){
+  await sb.from('orders').update({
+    order_status: $('#m-status').value,
+    payment_status: $('#m-pay').value,
+    advance_paid: Number($('#m-advance').value) || 0,
+    tcs_tracking: $('#m-tcs').value || null,
+    admin_note: $('#m-note').value || null,
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+  closeOrderModal();
+  await loadAll();
+}
+window.saveOrder = saveOrder;
+
+async function dispatchOrder(id){
+  const o = DB.orders.find(x => x.id === id);
+  const tcs = $('#m-tcs').value.trim();
+  if (!tcs) { alert('Please enter the TCS Tracking ID first.'); return; }
+  if (o.payment_status !== 'verified' && !confirm('⚠️ Payment is NOT verified yet. Dispatch anyway?')) return;
+
+  const advance = Number($('#m-advance').value) || Number(o.advance_paid) || 0;
+  const balance = Number(o.total||0) - advance;
+
+  await sb.from('orders').update({
+    order_status: 'dispatched',
+    tcs_tracking: tcs,
+    advance_paid: advance,
+    admin_note: $('#m-note').value || null,
+    updated_at: new Date().toISOString()
+  }).eq('id', id);
+
+  const msg =
+`Assalam-o-Alaikum ${o.customer_name} 🌸
+
+✅ Your order *${o.order_code}* from *Traditional Artistry Work* has been dispatched via TCS.
+
+📦 TCS Tracking ID: *${tcs}*
+🔎 Track here:
+https://www.tcsexpress.com/tracking?tracking_number=${tcs}
+
+💰 Advance received: Rs. ${advance.toLocaleString('en-PK')}
+💵 Balance to pay on delivery: Rs. ${balance.toLocaleString('en-PK')}
+
+Please keep the exact balance ready for the TCS rider.
+
+Shukriya for shopping with us!
+Safdar Hussain – Traditional Artistry Work
+📞 0333-3882131`;
+
+  const r = await sendWhatsApp(o.phone, msg);
+  alert(r.auto ? '✅ Dispatched – WhatsApp message sent automatically.' : '✅ Dispatched – WhatsApp chat opened. Press Send to deliver the message.');
+
+  closeOrderModal();
+  await loadAll();
+}
+window.dispatchOrder = dispatchOrder;
+
+/* ============================================================
+   PAYMENTS
+============================================================ */
+function renderPayments(){
+  const list = DB.orders.filter(o => o.payment_proof_url || o.payment_status === 'submitted');
+  const box = $('#payments-list');
+  if (!list.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No payment proofs submitted yet.</div>'; return; }
+
+  box.innerHTML = list.map(o => {
+    const balance = Number(o.total||0) - Number(o.advance_paid||0);
+    return `
+    <div class="card">
+      <div class="flex flex-wrap gap-4">
+        <a href="${esc(o.payment_proof_url)}" target="_blank" class="flex-shrink-0">
+          <img src="${esc(o.payment_proof_url)}" class="w-32 h-32 object-cover rounded-xl border-2 border-amber-200">
+        </a>
+        <div class="flex-1 min-w-[220px]">
+          <div class="flex justify-between items-start flex-wrap gap-2">
+            <div>
+              <p class="font-bold text-red-900">${esc(o.order_code)}</p>
+              <p class="text-sm">${esc(o.customer_name)} • ${esc(o.phone)}</p>
+            </div>
+            <span class="pill ${PAY_COLORS[o.payment_status]||''}">${esc(o.payment_status)}</span>
+          </div>
+          <div class="grid grid-cols-3 gap-2 mt-3 text-sm">
+            <div class="bg-gray-50 rounded-lg p-2"><p class="text-xs text-gray-500">Total</p><p class="font-bold">${money(o.total)}</p></div>
+            <div class="bg-green-50 rounded-lg p-2"><p class="text-xs text-gray-500">Advance</p><p class="font-bold text-green-700">${money(o.advance_paid)}</p></div>
+            <div class="bg-red-50 rounded-lg p-2"><p class="text-xs text-gray-500">Balance</p><p class="font-bold text-red-700">${money(balance)}</p></div>
+          </div>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <button onclick="verifyPayment(${o.id})" class="btn btn-green">✅ Approve & Verify</button>
+            <button onclick="rejectPayment(${o.id})" class="btn btn-ghost">❌ Reject</button>
+            <button onclick="openOrderModal(${o.id})" class="btn btn-red">🚚 Dispatch</button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function rejectPayment(id){
+  if (!confirm('Reject this payment proof?')) return;
+  await sb.from('orders').update({ payment_status:'rejected', updated_at:new Date().toISOString() }).eq('id', id);
+  await loadAll();
+}
+window.rejectPayment = rejectPayment;
+
+/* ============================================================
+   REVIEWS
+============================================================ */
+function renderReviews(){
+  const approved = DB.reviews.filter(r => r.is_approved).length;
+  const pending  = DB.reviews.length - approved;
+  $('#rev-approved').textContent = approved;
+  $('#rev-pending').textContent = pending;
+
+  const box = $('#reviews-list');
+  if (!DB.reviews.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No reviews yet.</div>'; return; }
+
+  box.innerHTML = DB.reviews.map(r => {
+    const p = DB.products.find(x => x.id === r.product_id);
+    return `
+    <div class="card ${r.is_approved ? 'border-l-4 border-green-500' : 'border-l-4 border-yellow-500'}">
+      <div class="flex justify-between items-start flex-wrap gap-2">
+        <div>
+          <p class="font-semibold">${esc(r.customer_name)} <span class="text-xs text-gray-500">${esc(r.phone||'')}</span></p>
+          <p class="text-xs text-gray-500">on ${esc(p ? p.name : 'Deleted product')} • ${new Date(r.created_at).toLocaleDateString('en-PK')}</p>
+        </div>
+        <div class="text-yellow-500 text-lg">${'★'.repeat(r.rating||0)}<span class="text-gray-300">${'★'.repeat(5-(r.rating||0))}</span></div>
+      </div>
+      <p class="text-sm text-gray-700 mt-2">${esc(r.comment)}</p>
+      <div class="flex gap-2 mt-3">
+        ${r.is_approved
+          ? `<button onclick="approveReview(${r.id},false)" class="btn btn-ghost">🙈 Unpublish</button>`
+          : `<button onclick="approveReview(${r.id},true)" class="btn btn-green">✅ Approve</button>`}
+        <button onclick="deleteReview(${r.id})" class="btn btn-ghost text-red-700">🗑 Delete</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function approveReview(id, val){
+  await sb.from('reviews').update({ is_approved: val }).eq('id', id);
+  await loadAll();
+}
+async function deleteReview(id){
+  if (!confirm('Delete this review?')) return;
+  await sb.from('reviews').delete().eq('id', id);
+  await loadAll();
+}
+window.approveReview = approveReview;
+window.deleteReview = deleteReview;
+
+/* ============================================================
+   EXPENSES
+============================================================ */
+$('#expense-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  await sb.from('expenses').insert({
+    title: $('#exp-title').value,
+    category: $('#exp-category').value,
+    amount: Number($('#exp-amount').value) || 0,
+    expense_date: $('#exp-date').value || todayKey()
+  });
+  $('#expense-form').reset();
+  await loadAll();
+});
+
+function renderExpenses(){
+  const total = DB.expenses.reduce((a,e) => a + Number(e.amount||0), 0);
+  $('#exp-total').textContent = money(total);
+  $('#expenses-table').innerHTML = DB.expenses.length ? `
+    <thead><tr><th>Date</th><th>Title</th><th>Category</th><th>Amount</th><th></th></tr></thead>
+    <tbody>${DB.expenses.map(e => `
+      <tr>
+        <td class="text-xs">${esc(e.expense_date)}</td>
+        <td class="font-semibold">${esc(e.title)}</td>
+        <td><span class="pill bg-amber-100 text-amber-800">${esc(e.category||'Other')}</span></td>
+        <td class="font-bold text-red-800">${money(e.amount)}</td>
+        <td><button onclick="deleteExpense(${e.id})" class="text-red-600 text-xs hover:underline">Delete</button></td>
+      </tr>`).join('')}</tbody>`
+    : '<tbody><tr><td class="text-gray-400 py-6 text-center">No expenses recorded.</td></tr></tbody>';
+}
+async function deleteExpense(id){
+  if (!confirm('Delete this expense?')) return;
+  await sb.from('expenses').delete().eq('id', id);
+  await loadAll();
+}
+window.deleteExpense = deleteExpense;
+
+/* ============================================================
+   LOCATIONS
+============================================================ */
+let editingLocId = null;
+
+$('#location-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const payload = {
+    name: $('#loc-name').value,
+    city: $('#loc-city').value,
+    address: $('#loc-address').value,
+    phone: $('#loc-phone').value,
+    hours: $('#loc-hours').value,
+    map_embed: $('#loc-map').value,
+    maps_link: $('#loc-link').value,
+    is_active: true
+  };
+  if (editingLocId) await sb.from('store_locations').update(payload).eq('id', editingLocId);
+  else await sb.from('store_locations').insert(payload);
+
+  $('#location-form').reset();
+  editingLocId = null;
+  $('#loc-cancel').classList.add('hidden');
+  await loadAll();
+});
+
+$('#loc-cancel').addEventListener('click', () => {
+  $('#location-form').reset();
+  editingLocId = null;
+  $('#loc-cancel').classList.add('hidden');
+});
+
+function renderLocations(){
+  const box = $('#locations-list');
+  if (!DB.locations.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No store locations added yet.</div>'; return; }
+  box.innerHTML = DB.locations.map(l => `
+    <div class="card flex flex-wrap justify-between items-start gap-3">
+      <div>
+        <p class="font-bold text-red-900">📍 ${esc(l.name)}</p>
+        <p class="text-sm text-gray-600">${esc(l.address||'')} ${esc(l.city||'')}</p>
+        <p class="text-sm text-gray-600">📞 ${esc(l.phone||'')} • 🕒 ${esc(l.hours||'')}</p>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="editLocation(${l.id})" class="btn btn-ghost">Edit</button>
+        <button onclick="deleteLocation(${l.id})" class="btn btn-ghost text-red-700">Delete</button>
+      </div>
+    </div>`).join('');
+}
+function editLocation(id){
+  const l = DB.locations.find(x => x.id === id);
+  if (!l) return;
+  editingLocId = id;
+  $('#loc-name').value = l.name || '';
+  $('#loc-city').value = l.city || '';
+  $('#loc-address').value = l.address || '';
+  $('#loc-phone').value = l.phone || '';
+  $('#loc-hours').value = l.hours || '';
+  $('#loc-map').value = l.map_embed || '';
+  $('#loc-link').value = l.maps_link || '';
+  $('#loc-cancel').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior:'smooth' });
+}
+async function deleteLocation(id){
+  if (!confirm('Delete this store location?')) return;
+  await sb.from('store_locations').delete().eq('id', id);
+  await loadAll();
+}
+window.editLocation = editLocation;
+window.deleteLocation = deleteLocation;
+
+/* ============================================================
+   TICKER
+============================================================ */
+$('#ticker-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const id = $('#tick-id').value;
+  const payload = {
+    message: $('#tick-message').value,
+    sort_order: Number($('#tick-order').value) || 0,
+    is_active: true
+  };
+  if (id) await sb.from('ticker_messages').update(payload).eq('id', id);
+  else await sb.from('ticker_messages').insert(payload);
+
+  $('#ticker-form').reset();
+  $('#tick-id').value = '';
+  $('#tick-order').value = 0;
+  $('#tick-cancel').classList.add('hidden');
+  await loadAll();
+});
+
+$('#tick-cancel').addEventListener('click', () => {
+  $('#ticker-form').reset();
+  $('#tick-id').value = '';
+  $('#tick-cancel').classList.add('hidden');
+});
+
+function renderTickers(){
+  const box = $('#ticker-list');
+  if (!DB.tickers.length) { box.innerHTML = '<div class="card text-center text-gray-400 py-10">No ticker messages yet.</div>'; return; }
+  box.innerHTML = DB.tickers.map(t => `
+    <div class="card flex justify-between items-center gap-3 py-3">
+      <p class="text-sm flex-1 ${t.is_active ? '' : 'line-through text-gray-400'}">${esc(t.message)}</p>
+      <div class="flex gap-2 flex-shrink-0">
+        <button onclick="toggleTicker(${t.id},${!t.is_active})" class="btn ${t.is_active ? 'btn-green' : 'btn-ghost'} text-xs">${t.is_active ? 'Active' : 'Hidden'}</button>
+        <button onclick="editTicker(${t.id})" class="btn btn-ghost text-xs">Edit</button>
+        <button onclick="deleteTicker(${t.id})" class="btn btn-ghost text-xs text-red-700">Del</button>
+      </div>
+    </div>`).join('');
+}
+function editTicker(id){
+  const t = DB.tickers.find(x => x.id === id);
+  if (!t) return;
+  $('#tick-id').value = t.id;
+  $('#tick-message').value = t.message;
+  $('#tick-order').value = t.sort_order || 0;
+  $('#tick-cancel').classList.remove('hidden');
+  window.scrollTo({ top: 0, behavior:'smooth' });
+}
+async function toggleTicker(id, val){ await sb.from('ticker_messages').update({ is_active: val }).eq('id', id); await loadAll(); }
+async function deleteTicker(id){ if (!confirm('Delete this message?')) return; await sb.from('ticker_messages').delete().eq('id', id); await loadAll(); }
+window.editTicker = editTicker;
+window.toggleTicker = toggleTicker;
+window.deleteTicker = deleteTicker;
+
+/* ============================================================
+   SETTINGS
+============================================================ */
+const SETTING_KEYS = ['advance_percent','whatsapp_number','payment_jazzcash','payment_easypaisa',
+                      'payment_bank','payment_title','wa_api_url','wa_api_token'];
+
+function renderSettings(){
+  SETTING_KEYS.forEach(k => {
+    const el = $('#set_' + k);
+    if (el) el.value = DB.settings[k] ?? '';
+  });
+}
+
+$('#settings-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const rows = SETTING_KEYS.map(k => ({ key: k, value: $('#set_' + k).value }));
+  const { error } = await sb.from('settings').upsert(rows, { onConflict:'key' });
+  if (error) { flash('#settings-msg', 'Error: ' + error.message, 'red'); return; }
+  flash('#settings-msg', '✅ Settings saved!', 'green');
+  await loadAll();
+});
+</script>
 </body>
 </html>
