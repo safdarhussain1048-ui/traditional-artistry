@@ -350,9 +350,16 @@
     <div class="flex flex-col h-full">
       <div class="flex items-center justify-between p-5 border-b">
         <h3 class="font-display text-xl font-bold text-baloch-deepred">Your Cart</h3>
-        <button id="close-cart" class="p-2 hover:bg-gray-100 rounded-full">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-        </button>
+        <div class="flex items-center gap-2">
+          <!-- NEW CLEAR CART BUTTON ADDED HERE -->
+          <button id="clear-cart-btn" class="text-sm text-red-600 hover:text-red-800 font-medium px-3 py-1.5 rounded-md hover:bg-red-50 transition-colors">
+            Clear Cart
+          </button>
+          <!-- EXISTING CLOSE BUTTON -->
+          <button id="close-cart" class="p-2 hover:bg-gray-100 rounded-full">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+          </button>
+        </div>
       </div>
       <div id="cart-items" class="flex-1 overflow-y-auto p-5 space-y-4"></div>
       <div class="border-t p-5 space-y-3">
