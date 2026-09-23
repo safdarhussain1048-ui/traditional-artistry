@@ -1,7 +1,7 @@
 /* ============================================================
    Traditional Artistry Work – Customer App (Supabase)
    Original features + orders/reviews/tracking/stores/ticker
-   + Payment verification warnings
+   + Payment verification warnings + Clear Cart Feature
    ============================================================ */
 
 // ============ STATE ============
@@ -831,6 +831,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('close-cart')?.addEventListener('click', closeCart);
   document.getElementById('cart-backdrop')?.addEventListener('click', closeCart);
   document.getElementById('checkout-btn')?.addEventListener('click', openCheckout);
+
+  // ============ NEW: CLEAR CART FEATURE ============
+  document.getElementById('clear-cart-btn')?.addEventListener('click', () => {
+    // If cart is already empty, just show a message
+    if (cart.length === 0) {
+      showToast('Your cart is already empty', 'error');
+      return;
+    }
+    
+    // Ask for confirmation before clearing
+    if (confirm('Are you sure you want to clear your entire cart?')) {
+      cart = [];           // 1. Empty the cart array
+      saveCart();          // 2. Save to localStorage & update the UI (resets count to 0)
+      closeCart();         // 3. Close the sidebar drawer
+      showToast('Cart cleared successfully!', 'success'); // 4. Show success message
+    }
+  });
+  // =================================================
 
   document.getElementById('track-btn')?.addEventListener('click', lookupTracking);
   document.getElementById('track-input')?.addEventListener('keypress', e => {
