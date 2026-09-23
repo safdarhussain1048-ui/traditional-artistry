@@ -1,4 +1,11 @@
-/* Traditional Artistry Work - Custom Styles */
+/* ============================================================
+   Traditional Artistry Work – Complete Stylesheet
+   Original design preserved + new features added at bottom
+   ============================================================ */
+
+/* ============================================================
+   ===== ORIGINAL STYLES (unchanged) =====
+   ============================================================ */
 
 body {
   color: #1A1A1A;
@@ -326,4 +333,447 @@ html { scroll-behavior: smooth; }
 button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible {
   outline: 2px solid #C9A227;
   outline-offset: 2px;
+}
+
+/* ============================================================
+   ===== NEW ADDITIONS (2026 upgrade) =====
+   ============================================================ */
+
+/* ---------- SCROLLING TICKER BAR (top of site) ---------- */
+.ta-ticker {
+  background: linear-gradient(90deg, #6B0F0F, #9B1B1B, #6B0F0F);
+  color: #fff;
+  overflow: hidden;
+  position: relative;
+  padding: 0.5rem 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid rgba(201,162,39,0.4);
+}
+.ta-ticker-track {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: ta-marquee 38s linear infinite;
+}
+.ta-ticker:hover .ta-ticker-track { animation-play-state: paused; }
+.ta-ticker-item { margin: 0 2.5rem; font-weight: 500; }
+.ta-ticker-item::before {
+  content: '✦';
+  color: #C9A227;
+  margin-right: 0.6rem;
+}
+@keyframes ta-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-100%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ta-ticker-track { animation: none; padding-left: 0; }
+}
+
+/* ---------- DISCOUNT BADGE (product cards) ---------- */
+.discount-badge {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: #1A5F2A;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.28rem 0.6rem;
+  border-radius: 9999px;
+  box-shadow: 0 3px 10px rgba(26,95,42,0.35);
+  z-index: 2;
+}
+.product-price-old {
+  text-decoration: line-through;
+  color: #9CA3AF;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-right: 0.4rem;
+}
+
+/* ---------- ADVANCE PAYMENT INFO BOX ---------- */
+.advance-info-box {
+  background: linear-gradient(135deg, #FDF6E9, #F5E6C8);
+  border: 1.5px dashed #C9A227;
+  border-radius: 1rem;
+  padding: 1rem 1.15rem;
+}
+.advance-info-box h4 {
+  color: #6B0F0F;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.advance-info-box p {
+  font-size: 0.82rem;
+  color: #4B5563;
+  line-height: 1.5;
+}
+.advance-info-box .advance-amount {
+  color: #9B1B1B;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+/* ---------- STAR RATING (display + input) ---------- */
+.star-display {
+  color: #C9A227;
+  letter-spacing: 0.08em;
+  font-size: 1.05rem;
+}
+.star-display .star-empty { color: #E5E0D5; }
+
+.star-input {
+  display: flex;
+  gap: 0.35rem;
+  font-size: 1.9rem;
+  cursor: pointer;
+  user-select: none;
+}
+.star-input span {
+  color: #E5E0D5;
+  transition: transform 0.12s, color 0.12s;
+  line-height: 1;
+}
+.star-input span:hover,
+.star-input span.active {
+  color: #C9A227;
+  transform: scale(1.12);
+}
+
+/* ---------- REVIEW CARD ---------- */
+.review-card {
+  background: #fff;
+  border: 1px solid rgba(201,162,39,0.22);
+  border-radius: 1rem;
+  padding: 1.15rem 1.25rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.review-card:hover {
+  box-shadow: 0 6px 20px rgba(155,27,27,0.08);
+  transform: translateY(-2px);
+}
+.review-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+.review-avatar {
+  width: 2.5rem; height: 2.5rem;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #9B1B1B, #C9A227);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.95rem;
+  flex-shrink: 0;
+}
+.review-body {
+  font-size: 0.9rem;
+  color: #374151;
+  line-height: 1.55;
+  margin-top: 0.4rem;
+}
+.review-meta {
+  font-size: 0.72rem;
+  color: #9CA3AF;
+  margin-top: 0.5rem;
+}
+
+/* ---------- TRACKING LOOKUP BOX ---------- */
+.tracking-box {
+  background: #fff;
+  border: 1px solid rgba(13,115,119,0.25);
+  border-radius: 1rem;
+  padding: 1.25rem;
+  box-shadow: 0 2px 10px rgba(13,115,119,0.06);
+}
+.tracking-result {
+  background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
+  border: 1px solid #0D7377;
+  border-radius: 0.85rem;
+  padding: 1rem;
+  margin-top: 1rem;
+}
+.tracking-result h4 {
+  color: #0D7377;
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+.tracking-status-pill {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ---------- STORE LOCATION CARD ---------- */
+.store-card {
+  background: #fff;
+  border: 1px solid rgba(201,162,39,0.25);
+  border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.05);
+}
+.store-card .store-map {
+  width: 100%;
+  height: 220px;
+  border: 0;
+  display: block;
+}
+.store-card .store-info {
+  padding: 1rem 1.15rem;
+}
+.store-card .store-info h4 {
+  color: #6B0F0F;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.35rem;
+}
+.store-card .store-info p {
+  font-size: 0.85rem;
+  color: #4B5563;
+  margin: 0.15rem 0;
+}
+.store-live-dot {
+  display: inline-block;
+  width: 0.55rem; height: 0.55rem;
+  border-radius: 9999px;
+  background: #22C55E;
+  box-shadow: 0 0 0 0 rgba(34,197,94,0.6);
+  animation: ta-pulse 1.8s infinite;
+  margin-right: 0.35rem;
+}
+@keyframes ta-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(34,197,94,0.55); }
+  70%  { box-shadow: 0 0 0 10px rgba(34,197,94,0); }
+  100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+}
+
+/* ============================================================
+   ===== ADMIN PANEL STYLES =====
+   ============================================================ */
+
+/* ---------- TAB NAVIGATION ---------- */
+.admin-tab {
+  padding: 0.6rem 1rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #6B0F0F;
+  white-space: nowrap;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.admin-tab:hover { color: #9B1B1B; background: #FDF6E9; }
+.admin-tab.active {
+  background: #fff;
+  border-bottom-color: #9B1B1B;
+  color: #9B1B1B;
+}
+
+/* ---------- CARDS ---------- */
+.admin-card {
+  background: #fff;
+  border-radius: 1rem;
+  box-shadow: 0 4px 20px rgba(107,15,15,0.07);
+  padding: 1.25rem;
+}
+.admin-kpi {
+  background: #fff;
+  border-radius: 1rem;
+  padding: 1rem 1.15rem;
+  border-left: 5px solid #C9A227;
+  box-shadow: 0 4px 18px rgba(107,15,15,0.06);
+  transition: transform 0.15s;
+}
+.admin-kpi:hover { transform: translateY(-2px); }
+.admin-kpi .kpi-value {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #6B0F0F;
+  line-height: 1.1;
+}
+.admin-kpi .kpi-label {
+  font-size: 0.72rem;
+  color: #6B7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.2rem;
+}
+
+/* ---------- STATUS PILLS ---------- */
+.pill {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: capitalize;
+}
+.pill-new         { background:#DBEAFE; color:#1E40AF; }
+.pill-confirmed   { background:#E0E7FF; color:#3730A3; }
+.pill-packed      { background:#EDE9FE; color:#5B21B6; }
+.pill-dispatched  { background:#FEF3C7; color:#92400E; }
+.pill-delivered   { background:#D1FAE5; color:#065F46; }
+.pill-cancelled   { background:#FEE2E2; color:#991B1B; }
+.pill-pending     { background:#E5E7EB; color:#374151; }
+.pill-submitted   { background:#FEF3C7; color:#92400E; }
+.pill-verified    { background:#D1FAE5; color:#065F46; }
+.pill-rejected    { background:#FEE2E2; color:#991B1B; }
+.pill-active      { background:#D1FAE5; color:#065F46; }
+.pill-inactive    { background:#F3F4F6; color:#6B7280; }
+
+/* ---------- ADMIN TABLE ---------- */
+.admin-table {
+  width: 100%;
+  font-size: 0.83rem;
+  border-collapse: collapse;
+}
+.admin-table th {
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  color: #6B0F0F;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1.5px solid #F1EAD9;
+  background: #FDF6E9;
+}
+.admin-table td {
+  padding: 0.6rem 0.5rem;
+  border-top: 1px solid #F6F1E4;
+  vertical-align: middle;
+}
+.admin-table tr:hover td { background: #FFFBF5; }
+
+/* ---------- VISITOR CHART BARS ---------- */
+.chart-bar {
+  width: 100%;
+  border-radius: 0.5rem 0.5rem 0 0;
+  background: linear-gradient(to top, #6B0F0F, #C9A227);
+  transition: all 0.3s;
+  min-height: 4px;
+}
+
+/* ---------- MODAL (admin) ---------- */
+.admin-modal-bg {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  z-index: 50;
+  backdrop-filter: blur(2px);
+}
+.admin-modal-panel {
+  background: #fff;
+  border-radius: 1rem;
+  max-width: 640px;
+  width: calc(100% - 2rem);
+  margin: 2rem auto;
+  padding: 1.5rem;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  max-height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+/* ---------- ADMIN FORM INPUT (shared look) ---------- */
+.admin-input {
+  width: 100%;
+  padding: 0.6rem 0.9rem;
+  border: 1.5px solid #E5E0D5;
+  border-radius: 0.7rem;
+  background: #FFFBF5;
+  font-size: 0.85rem;
+  font-family: inherit;
+  color: #1A1A1A;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.admin-input:focus {
+  outline: none;
+  border-color: #C9A227;
+  box-shadow: 0 0 0 3px rgba(201,162,39,0.2);
+}
+
+/* ---------- ADMIN BUTTONS ---------- */
+.admin-btn {
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.7rem;
+  font-weight: 600;
+  font-size: 0.82rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+.admin-btn-primary { background: #9B1B1B; color: #fff; }
+.admin-btn-primary:hover { background: #6B0F0F; }
+.admin-btn-success { background: #1A5F2A; color: #fff; }
+.admin-btn-success:hover { background: #134A20; }
+.admin-btn-ghost { background: #F5E6C8; color: #6B0F0F; }
+.admin-btn-ghost:hover { background: #ECD9B0; }
+.admin-btn-danger { background: #DC2626; color: #fff; }
+.admin-btn-danger:hover { background: #B91C1C; }
+.admin-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ---------- ADMIN FLASH MESSAGES ---------- */
+.admin-flash {
+  padding: 0.7rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+.admin-flash-success { background: #D1FAE5; color: #065F46; }
+.admin-flash-error   { background: #FEE2E2; color: #991B1B; }
+
+/* ---------- REVENUE / PROFIT BOXES ---------- */
+.profit-box {
+  padding: 1rem;
+  border-radius: 0.85rem;
+  border: 1px solid;
+}
+.profit-box .pb-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+}
+.profit-box .pb-value {
+  font-size: 1.35rem;
+  font-weight: 800;
+}
+.profit-revenue  { background:#ECFDF5; border-color:#6EE7B7; }
+.profit-revenue  .pb-label { color:#065F46; } .profit-revenue  .pb-value { color:#047857; }
+.profit-cost     { background:#FFF7ED; border-color:#FDBA74; }
+.profit-cost     .pb-label { color:#9A3412; } .profit-cost     .pb-value { color:#C2410C; }
+.profit-expense  { background:#FEF2F2; border-color:#FCA5A5; }
+.profit-expense  .pb-label { color:#991B1B; } .profit-expense  .pb-value { color:#B91C1C; }
+.profit-net      { background:#D1FAE5; border-color:#10B981; border-width:2px; }
+.profit-net      .pb-label { color:#065F46; } .profit-net      .pb-value { color:#047857; }
+.profit-net.negative { background:#FEE2E2; border-color:#EF4444; }
+.profit-net.negative .pb-label { color:#991B1B; }
+.profit-net.negative .pb-value { color:#B91C1C; }
+
+/* ---------- MOBILE RESPONSIVE TWEAKS ---------- */
+@media (max-width: 640px) {
+  .admin-kpi .kpi-value { font-size: 1.3rem; }
+  .admin-modal-panel { padding: 1.15rem; }
+  .star-input { font-size: 1.6rem; }
+  .ta-ticker { font-size: 0.78rem; }
 }
