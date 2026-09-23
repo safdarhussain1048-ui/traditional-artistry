@@ -110,7 +110,7 @@
 
       <!-- PROFIT & LOSS SUMMARY -->
       <div class="admin-card mb-5">
-        <h3 class="font-bold text-red-900 mb-4 text-sm">🧮 True Profit & Loss Summary</h3>
+        <h3 class="font-bold text-red-900 mb-4 text-sm">🧮 True Profit & Loss Summary (Prudence Concept)</h3>
         <div id="dash-profit" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3"></div>
       </div>
 
@@ -358,7 +358,7 @@ let editingLocId = null;
 let currentOrderId = null;
 let sessionTimer = null;
 let lastActivity = Date.now();
-let profitChartInstance = null; // Store Chart.js instance
+let profitChartInstance = null; 
 
 /* ============================================================
    SAFETY FOOTER
@@ -528,7 +528,7 @@ function renderAll() {
 }
 
 /* ============================================================
-   HELPERS
+   HELPERS (PRUDENCE CONCEPT IMPLEMENTED)
 ============================================================ */
 function flash(sel, text, color) {
   const el = $(sel);
@@ -540,32 +540,37 @@ function flash(sel, text, color) {
   el._t = setTimeout(() => el.classList.add('hidden'), 4000);
 }
 
-function orderRevenue(o) { return (o.items||[]).reduce((a,i)=>a + Number(i.price||0)*Number(i.qty||0), 0); }
+// PRUDENCE: Only count Realized Revenue (Cash in Hand) for profit calculation
+function orderRevenue(o) { 
+  return Number(o.advance_paid || 0) + Number(o.balance_paid || 0); 
+}
 
-// UPGRADED: Dynamically looks up current product cost if the order has 0 or missing cost
-// BULLETPROOF COST CALCULATION: Always uses the current product cost from Products tab
+// PRUDENCE: Calculate proportional COGS based on Realized Revenue
 function orderCost(o) { 
-  return (o.items||[]).reduce((a,i) => {
+  const totalOrderValue = (o.items||[]).reduce((a,i)=>a + Number(i.price||0)*Number(i.qty||0), 0);
+  if (totalOrderValue === 0) return 0;
+  
+  const totalCost = (o.items||[]).reduce((a,i) => {
     let cost = 0;
-    
-    // Always force lookup the CURRENT cost by converting IDs to Numbers for a perfect match
+    // Always look up the CURRENT cost from the Products table to allow editing past data
     if (i.product_id) {
       const prod = DB.products.find(p => Number(p.id) === Number(i.product_id));
-      if (prod && Number(prod.cost_price) > 0) {
-        cost = Number(prod.cost_price);
-      }
+      if (prod) cost = Number(prod.cost_price || 0);
     }
-    
-    // Fallback: look up by exact name if product_id is missing
     if (cost === 0 && i.name) {
        const prod = DB.products.find(p => p.name === i.name);
-       if (prod && Number(prod.cost_price) > 0) {
-         cost = Number(prod.cost_price);
-       }
+       if (prod) cost = Number(prod.cost_price || 0);
     }
     return a + (cost * Number(i.qty || 0));
-  }, 0); 
+  }, 0);
+
+  // Only recognize the cost proportionally to how much cash we have collected
+  const realizedRevenue = Number(o.advance_paid || 0) + Number(o.balance_paid || 0);
+  const realizationRatio = Math.min(1, realizedRevenue / totalOrderValue);
+  
+  return totalCost * realizationRatio; 
 }
+
 const STATUS_PILL = {
   new:'pill-new', confirmed:'pill-confirmed', packed:'pill-packed',
   dispatched:'pill-dispatched', delivered:'pill-delivered', cancelled:'pill-cancelled'
@@ -606,14 +611,14 @@ async function sendWhatsApp(phone, message){
 }
 
 /* ============================================================
-   DASHBOARD (UPGRADED V2 - COGS & OPEX SEPARATION)
+   DASHBOARD (UPGRADED V3 - PRUDENCE CONCEPT & UNREALIZED REVENUE)
 ============================================================ */
 function renderDashboard() {
   const today = new Date().toISOString().slice(0,10);
   const visitsToday = DB.visits.filter(v => v.created_at.slice(0,10) === today).length;
   const active = DB.orders.filter(o => o.order_status !== 'cancelled');
   
-  const revenue  = active.reduce((a,o) => a + orderRevenue(o), 0);
+  const revenue  = active.reduce((a,o) => a + orderRevenue(o), 0); // Realized Revenue
   const cogs     = active.reduce((a,o) => a + orderCost(o), 0);
   const expenses = DB.expenses.reduce((a,e) => a + Number(e.amount||0), 0);
   
@@ -634,7 +639,7 @@ function renderDashboard() {
 
   $('#dash-kpis').innerHTML = `
     <div class="admin-kpi"><div class="kpi-value">${visitsToday}</div><div class="kpi-label">Visitors Today</div></div>
-    <div class="admin-kpi" style="border-left-color:#0D7377"><div class="kpi-value" style="color:#0D7377">${money(revenue)}</div><div class="kpi-label">Gross Revenue</div></div>
+    <div class="admin-kpi" style="border-left-color:#0D7377"><div class="kpi-value" style="color:#0D7377">${money(revenue)}</div><div class="kpi-label">Realized Revenue</div></div>
     <div class="admin-kpi" style="border-left-color:#C9A227"><div class="kpi-value" style="color:#C9A227">${money(grossProfit)}</div><div class="kpi-label">Gross Profit (${grossMarginPct}%)</div></div>
     <div class="admin-kpi" style="border-left-color:#1A5F2A"><div class="kpi-value" style="color:#1A5F2A">${money(netProfit)}</div><div class="kpi-label">Net Profit (${netMarginPct}%)</div></div>
     <div class="admin-kpi" style="border-left-color:#D94F70"><div class="kpi-value" style="color:#D94F70">${money(aov)}</div><div class="kpi-label">Avg Order Value</div></div>
@@ -643,11 +648,22 @@ function renderDashboard() {
     <div class="admin-kpi" style="border-left-color:#DC2626"><div class="kpi-value" style="color:#DC2626">${awaitingPay}</div><div class="kpi-label">Awaiting Verify</div></div>
   `;
 
+  // Calculate Unrealized Revenue (Money with TCS / COD)
+  const unrealizedRevenue = active.reduce((a,o) => {
+    const total = (o.items||[]).reduce((sum,i)=>sum + Number(i.price||0)*Number(i.qty||0), 0);
+    const paid = Number(o.advance_paid||0) + Number(o.balance_paid||0);
+    return a + Math.max(0, total - paid);
+  }, 0);
+
   $('#dash-profit').innerHTML = `
-    <div class="profit-box profit-revenue"><div class="pb-label">Gross Revenue</div><div class="pb-value">${money(revenue)}</div></div>
+    <div class="profit-box profit-revenue"><div class="pb-label">Realized Revenue (Cash in Hand)</div><div class="pb-value">${money(revenue)}</div></div>
     <div class="profit-box profit-cost"><div class="pb-label">COGS (Mfg. Cost)</div><div class="pb-value" style="color:#DC2626">− ${money(cogs)}</div></div>
     <div class="profit-box profit-expense"><div class="pb-label">Operating Expenses</div><div class="pb-value" style="color:#DC2626">− ${money(expenses)}</div></div>
-    <div class="profit-box profit-net ${netProfit<0?'negative':''}"><div class="pb-label">Net Profit</div><div class="pb-value">${money(netProfit)}</div></div>
+    <div class="profit-box profit-net ${netProfit<0?'negative':''}"><div class="pb-label">Net Profit (Realized)</div><div class="pb-value">${money(netProfit)}</div></div>
+    <div class="col-span-full mt-3 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm flex justify-between items-center">
+      <span class="text-amber-800 font-semibold">🚚 Pending Unrealized Revenue (With TCS / COD):</span>
+      <span class="font-bold text-amber-900">${money(unrealizedRevenue)}</span>
+    </div>
   `;
 
   renderProfitChart(active, DB.expenses);
@@ -700,8 +716,8 @@ function renderProfitChart(activeOrders, expenses) {
   activeOrders.forEach(o => {
     const d = days.find(x => x.key === o.created_at.slice(0,10));
     if (d) {
-      d.revenue += orderRevenue(o);
-      d.cost += orderCost(o);
+      d.revenue += orderRevenue(o); // Uses Prudence Concept Realized Revenue
+      d.cost += orderCost(o);       // Uses Prudence Concept Proportional COGS
     }
   });
 
@@ -1118,15 +1134,33 @@ window.openOrderModal = openOrderModal;
 window.closeOrderModal = closeOrderModal;
 
 async function saveOrder(id) {
+  const o = DB.orders.find(x => x.id === id);
+  if (!o) return;
+
+  const newStatus = $('#m-status').value;
+  const newPayStatus = $('#m-pay').value;
+  const currentAdvance = Number($('#m-advance').value) || 0;
+  
+  let newBalancePaid = Number(o.balance_paid || 0);
+  const total = Number(o.total || 0);
+  const currentBalanceDue = total - currentAdvance - newBalancePaid;
+
+  // PRUDENCE & AUTO-CLEAR: If manually set to delivered & verified, assume full balance was collected
+  if (newStatus === 'delivered' && newPayStatus === 'verified' && currentBalanceDue > 0) {
+    newBalancePaid += currentBalanceDue;
+  }
+
   await supabaseClient.from('orders').update({
-    order_status: $('#m-status').value,
-    payment_status: $('#m-pay').value,
-    advance_paid: Number($('#m-advance').value) || 0,
+    order_status: newStatus,
+    payment_status: newPayStatus,
+    advance_paid: currentAdvance,
+    balance_paid: newBalancePaid,
     tcs_tracking: $('#m-tcs').value || null,
     balance_method: $('#m-balance-method').value,
     admin_note: $('#m-note').value || null,
     updated_at: new Date().toISOString()
   }).eq('id', id);
+  
   closeOrderModal();
   await loadAll();
 }
