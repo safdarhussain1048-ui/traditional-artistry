@@ -25,9 +25,14 @@
 </head>
 <body class="font-body bg-baloch-cream text-baloch-dark antialiased">
 
-  <!-- Top Bar -->
-  <div class="bg-baloch-deepred text-white text-center py-2 text-sm tracking-wide">
-    Authentic Handmade Traditional Crafts • COD available nationwide via TCS
+  <!-- ============ RUNNING TICKER BAR (replaces old static top bar) ============ -->
+  <div class="ta-ticker">
+    <div class="ta-ticker-track" id="ticker-track">
+      <span class="ta-ticker-item">Authentic Handmade Traditional Crafts</span>
+      <span class="ta-ticker-item">Cash on Delivery available nationwide via TCS</span>
+      <span class="ta-ticker-item">✨ 100% Handmade with Love in Balochistan</span>
+      <span class="ta-ticker-item">💳 50% advance • balance on delivery</span>
+    </div>
   </div>
 
   <!-- Header -->
@@ -44,8 +49,10 @@
         <nav class="hidden lg:flex items-center gap-8">
           <a href="#home" class="nav-link">Home</a>
           <a href="#products" class="nav-link">Products</a>
+          <a href="#track" class="nav-link">Track Order</a>
           <a href="#categories" class="nav-link">Categories</a>
           <a href="#about" class="nav-link">About</a>
+          <a href="#stores" class="nav-link">Stores</a>
           <a href="#contact" class="nav-link">Contact</a>
         </nav>
         <div class="flex items-center gap-4">
@@ -63,8 +70,10 @@
       <nav class="flex flex-col px-4 py-4 gap-3">
         <a href="#home" class="mobile-nav-link">Home</a>
         <a href="#products" class="mobile-nav-link">Products</a>
+        <a href="#track" class="mobile-nav-link">Track Order</a>
         <a href="#categories" class="mobile-nav-link">Categories</a>
         <a href="#about" class="mobile-nav-link">About</a>
+        <a href="#stores" class="mobile-nav-link">Stores</a>
         <a href="#contact" class="mobile-nav-link">Contact</a>
       </nav>
     </div>
@@ -129,8 +138,26 @@
     </div>
   </section>
 
+  <!-- ============ TRACK YOUR ORDER (NEW) ============ -->
+  <section id="track" class="py-16 bg-baloch-light">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="text-center mb-10">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-baloch-deepred mb-3">Track Your Order</h2>
+        <div class="w-24 h-1 bg-baloch-gold mx-auto mb-4"></div>
+        <p class="text-gray-600">Enter your order code (e.g. <b>TA-XXXXX</b>) or your phone number to see live status and TCS tracking.</p>
+      </div>
+      <div class="tracking-box">
+        <div class="flex flex-col sm:flex-row gap-3">
+          <input type="text" id="track-input" class="form-input flex-1" placeholder="Order code or phone number">
+          <button id="track-btn" class="btn-primary sm:w-auto">Track Order</button>
+        </div>
+        <div id="track-result" class="hidden"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- About -->
-  <section id="about" class="py-16 bg-baloch-light">
+  <section id="about" class="py-16 bg-baloch-cream">
     <div class="max-w-7xl mx-auto px-4">
       <div class="grid md:grid-cols-2 gap-12 items-center">
         <div>
@@ -150,6 +177,18 @@
           <div class="stat-card"><div class="text-3xl font-bold text-baloch-teal">Custom</div><div class="text-sm text-gray-600">Orders Welcome</div></div>
         </div>
       </div>
+    </div>
+  </section>
+
+  <!-- ============ VISIT OUR STORE (NEW) ============ -->
+  <section id="stores" class="py-16 bg-baloch-light">
+    <div class="max-w-7xl mx-auto px-4">
+      <div class="text-center mb-12">
+        <h2 class="font-display text-3xl md:text-4xl font-bold text-baloch-deepred mb-3">Visit Our Store</h2>
+        <div class="w-24 h-1 bg-baloch-gold mx-auto mb-4"></div>
+        <p class="text-gray-600">Come see our collection in person — we'd love to meet you!</p>
+      </div>
+      <div id="stores-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
     </div>
   </section>
 
@@ -245,6 +284,7 @@
           <ul class="space-y-2 text-sm">
             <li><a href="#home" class="hover:text-baloch-gold">Home</a></li>
             <li><a href="#products" class="hover:text-baloch-gold">Products</a></li>
+            <li><a href="#track" class="hover:text-baloch-gold">Track Order</a></li>
             <li><a href="#contact" class="hover:text-baloch-gold">Contact</a></li>
           </ul>
         </div>
@@ -252,7 +292,7 @@
           <h4 class="font-semibold text-baloch-gold mb-3">Shipping & Payment</h4>
           <ul class="space-y-2 text-sm text-white/80">
             <li>• Nationwide via TCS</li>
-            <li>• Cash on Delivery (COD)</li>
+            <li>• 50% advance • balance on delivery</li>
             <li>• Secure packaging</li>
           </ul>
         </div>
@@ -284,7 +324,7 @@
       <div class="border-t p-5 space-y-3">
         <div class="flex justify-between text-sm"><span>Subtotal</span><span id="cart-subtotal" class="font-semibold">Rs. 0</span></div>
         <div class="flex justify-between text-lg font-bold text-baloch-deepred border-t pt-3"><span>Total</span><span id="cart-total">Rs. 0</span></div>
-        <button id="checkout-btn" class="btn-primary w-full">Order via WhatsApp</button>
+        <button id="checkout-btn" class="btn-primary w-full">Checkout</button>
       </div>
     </div>
   </div>
