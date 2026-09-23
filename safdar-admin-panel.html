@@ -12,6 +12,7 @@
 <style>
   body { font-family: 'Poppins', sans-serif; background: #FFFBF5; }
   .chart-container { position: relative; height: 300px; width: 100%; }
+  .role-badge { font-size: 0.75rem; padding: 2px 8px; border-radius: 12px; font-weight: 600; text-transform: uppercase; }
 </style>
 </head>
 <body class="min-h-screen">
@@ -55,9 +56,9 @@
         <label class="block text-sm font-medium mb-1">Confirm Password</label>
         <input type="password" id="register-confirm" required class="admin-input" placeholder="repeat password" minlength="6">
       </div>
-      <button type="submit" class="admin-btn admin-btn-primary w-full py-3">Create Admin Account</button>
+      <button type="submit" class="admin-btn admin-btn-primary w-full py-3">Create Account</button>
       <p id="register-msg" class="text-sm text-center hidden"></p>
-      <p class="text-xs text-gray-500 text-center">Only people you trust should register.</p>
+      <p class="text-xs text-gray-500 text-center">New accounts default to "Support" role. Owner can upgrade access later.</p>
     </form>
   </div>
 </div>
@@ -67,7 +68,10 @@
 ============================================================ -->
 <div id="admin-screen" class="hidden">
   <header class="bg-red-900 text-white px-3 md:px-5 py-3 flex justify-between items-center sticky top-0 z-40 shadow">
-    <h1 class="text-sm md:text-lg font-bold truncate">Admin Panel — Traditional Artistry Work</h1>
+    <div class="flex items-center gap-3">
+      <h1 class="text-sm md:text-lg font-bold truncate">Admin Panel — Traditional Artistry Work</h1>
+      <span id="user-role-badge" class="role-badge bg-amber-500 text-red-900 hidden">Owner</span>
+    </div>
     <div class="flex gap-2 items-center flex-shrink-0">
       <a href="index.html" target="_blank" class="text-xs underline hidden sm:inline">View Website</a>
       <button id="refresh-btn" class="bg-white/20 px-3 py-1.5 rounded-lg text-xs hover:bg-white/30">↻</button>
@@ -76,15 +80,16 @@
   </header>
 
   <nav class="bg-amber-100 border-b border-amber-200 px-1 md:px-4 flex gap-1 overflow-x-auto sticky top-[52px] z-30">
-    <button class="admin-tab active" data-tab="dashboard">📊 Dashboard</button>
-    <button class="admin-tab" data-tab="products">🛍 Products</button>
-    <button class="admin-tab" data-tab="orders">📦 Orders <span id="tab-orders-badge" class="hidden ml-1 bg-red-700 text-white text-[10px] px-1.5 rounded-full">0</span></button>
-    <button class="admin-tab" data-tab="payments">💳 Payments <span id="tab-pay-badge" class="hidden ml-1 bg-red-700 text-white text-[10px] px-1.5 rounded-full">0</span></button>
-    <button class="admin-tab" data-tab="reviews">⭐ Reviews</button>
-    <button class="admin-tab" data-tab="expenses">🧾 Expenses</button>
-    <button class="admin-tab" data-tab="stores">📍 Stores</button>
-    <button class="admin-tab" data-tab="ticker">📢 Ticker</button>
-    <button class="admin-tab" data-tab="settings">⚙️ Settings</button>
+    <button class="admin-tab active" data-tab="dashboard" data-roles="owner,accountant">📊 Dashboard</button>
+    <button class="admin-tab" data-tab="products" data-roles="owner">🛍 Products</button>
+    <button class="admin-tab" data-tab="orders" data-roles="owner,accountant,packer,support">📦 Orders <span id="tab-orders-badge" class="hidden ml-1 bg-red-700 text-white text-[10px] px-1.5 rounded-full">0</span></button>
+    <button class="admin-tab" data-tab="payments" data-roles="owner,accountant">💳 Payments <span id="tab-pay-badge" class="hidden ml-1 bg-red-700 text-white text-[10px] px-1.5 rounded-full">0</span></button>
+    <button class="admin-tab" data-tab="reviews" data-roles="owner,support">⭐ Reviews</button>
+    <button class="admin-tab" data-tab="expenses" data-roles="owner,accountant">🧾 Expenses</button>
+    <button class="admin-tab" data-tab="stores" data-roles="owner">📍 Stores</button>
+    <button class="admin-tab" data-tab="ticker" data-roles="owner">📢 Ticker</button>
+    <button class="admin-tab" data-tab="staff" data-roles="owner">👥 Staff</button>
+    <button class="admin-tab" data-tab="settings" data-roles="owner">⚙️ Settings</button>
   </nav>
 
   <main class="p-3 md:p-6 max-w-7xl mx-auto pb-24">
@@ -301,6 +306,15 @@
       <div id="ticker-list" class="space-y-2"></div>
     </section>
 
+    <!-- ================= STAFF TAB ================= -->
+    <section id="tab-staff" class="tab-panel hidden">
+      <div class="admin-card">
+        <h2 class="text-lg font-bold text-red-900 mb-4">👥 Staff Management</h2>
+        <p class="text-sm text-gray-600 mb-4">Manage employee access. Owner has full access. Accountant: Orders, Payments, Expenses. Packer: Orders (Dispatch only). Support: Orders, Reviews.</p>
+        <div class="overflow-x-auto"><table class="admin-table" id="staff-table"></table></div>
+      </div>
+    </section>
+
     <!-- ================= SETTINGS TAB ================= -->
     <section id="tab-settings" class="tab-panel hidden">
       <div class="admin-card">
@@ -352,13 +366,15 @@
 /* ============================================================
    STATE
 ============================================================ */
-const DB = { products:[], orders:[], reviews:[], expenses:[], visits:[], locations:[], tickers:[], settings:{} };
+const DB = { products:[], orders:[], reviews:[], expenses:[], visits:[], locations:[], tickers:[], settings:{}, profiles:[] };
 let editingProductId = null;
 let editingLocId = null;
 let currentOrderId = null;
 let sessionTimer = null;
 let lastActivity = Date.now();
 let profitChartInstance = null; 
+let currentUserRole = 'owner'; // Default to owner for safety
+let currentUserId = null;
 
 /* ============================================================
    SAFETY FOOTER
@@ -446,12 +462,54 @@ $('#logout-btn').addEventListener('click', async () => {
   location.reload();
 });
 
-function enterAdmin(session) {
+async function enterAdmin(session) {
+  currentUserId = session.user.id;
+  
+  // Fetch user role from profiles table
+  try {
+    const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', currentUserId).single();
+    currentUserRole = profile?.role || 'owner'; // Fallback to owner if no profile found
+  } catch(e) {
+    console.warn('Profile fetch failed, defaulting to owner', e);
+    currentUserRole = 'owner';
+  }
+
   $('#login-screen').classList.add('hidden');
   $('#admin-screen').classList.remove('hidden');
   $('#session-start').textContent = new Date().toLocaleString('en-PK');
+  
+  // Apply role-based permissions before loading data
+  applyRolePermissions();
   startSessionTimeout();
   loadAll();
+}
+
+function applyRolePermissions() {
+  // Update Badge
+  const badge = $('#user-role-badge');
+  badge.classList.remove('hidden');
+  badge.textContent = currentUserRole.toUpperCase();
+  if (currentUserRole === 'owner') badge.className = 'role-badge bg-amber-500 text-red-900';
+  if (currentUserRole === 'accountant') badge.className = 'role-badge bg-blue-500 text-white';
+  if (currentUserRole === 'packer') badge.className = 'role-badge bg-green-600 text-white';
+  if (currentUserRole === 'support') badge.className = 'role-badge bg-purple-500 text-white';
+
+  // Hide/Show tabs based on data-roles attribute
+  $$('.admin-tab').forEach(b => {
+    const allowedRoles = b.dataset.roles ? b.dataset.roles.split(',') : [];
+    if (allowedRoles.length > 0 && !allowedRoles.includes(currentUserRole)) {
+      b.classList.add('hidden');
+    } else {
+      b.classList.remove('hidden');
+    }
+  });
+
+  // If current active tab is hidden, switch to first visible tab
+  const activeTab = $('.admin-tab.active');
+  if (activeTab && activeTab.classList.contains('hidden')) {
+    const firstVisible = $$('.admin-tab').find(b => !b.classList.contains('hidden'));
+    if (firstVisible) firstVisible.click();
+  }
 }
 
 function startSessionTimeout() {
@@ -478,6 +536,7 @@ $$('.admin-tab').forEach(b => b.addEventListener('click', () => {
   $$('.tab-panel').forEach(p => p.classList.add('hidden'));
   $('#tab-' + b.dataset.tab).classList.remove('hidden');
   if (b.dataset.tab === 'dashboard') renderDashboard();
+  if (b.dataset.tab === 'staff') renderStaff();
 }));
 
 $('#refresh-btn').addEventListener('click', () => loadAll(true));
@@ -525,6 +584,7 @@ function renderAll() {
   renderLocations();
   renderTickers();
   renderSettings();
+  if (currentUserRole === 'owner') renderStaff();
 }
 
 /* ============================================================
@@ -609,6 +669,46 @@ async function sendWhatsApp(phone, message){
   window.open(waLink(phone, fullMsg), '_blank');
   return { ok:true, auto:false };
 }
+
+/* ============================================================
+   STAFF MANAGEMENT (OWNER ONLY)
+============================================================ */
+async function renderStaff() {
+  if (currentUserRole !== 'owner') return;
+  const box = $('#staff-table');
+  try {
+    const { data: profiles } = await supabaseClient.from('profiles').select('*');
+    if (!profiles || profiles.length === 0) {
+      box.innerHTML = '<tbody><tr><td class="text-gray-400 py-4 text-center">No staff accounts found.</td></tr></tbody>';
+      return;
+    }
+    box.innerHTML = `
+      <thead><tr><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+      <tbody>${profiles.map(p => `
+        <tr>
+          <td class="font-semibold text-sm">${esc(p.email || 'No Email')}</td>
+          <td>
+            <select class="admin-input py-1 px-2 text-xs" onchange="updateStaffRole('${p.id}', this.value)">
+              <option value="owner" ${p.role==='owner'?'selected':''}>Owner</option>
+              <option value="accountant" ${p.role==='accountant'?'selected':''}>Accountant</option>
+              <option value="packer" ${p.role==='packer'?'selected':''}>Packer/Warehouse</option>
+              <option value="support" ${p.role==='support'?'selected':''}>Customer Support</option>
+            </select>
+          </td>
+          <td><span class="text-xs text-gray-400">ID: ${p.id.slice(0,8)}...</span></td>
+        </tr>`).join('')}</tbody>
+    `;
+  } catch(e) {
+    box.innerHTML = '<tbody><tr><td class="text-red-500 py-4 text-center">Error loading staff.</td></tr></tbody>';
+  }
+}
+
+async function updateStaffRole(id, newRole) {
+  if (currentUserRole !== 'owner') return;
+  await supabaseClient.from('profiles').update({ role: newRole }).eq('id', id);
+  alert('✅ Role updated successfully!');
+}
+window.updateStaffRole = updateStaffRole;
 
 /* ============================================================
    DASHBOARD (UPGRADED V3 - PRUDENCE CONCEPT & UNREALIZED REVENUE)
@@ -855,6 +955,7 @@ function calcFinal() {
 
 $('#product-form').addEventListener('submit', async e => {
   e.preventDefault();
+  if (currentUserRole !== 'owner') { alert('⛔ Only the Owner can manage products.'); return; }
   const btn = $('#submit-btn');
   btn.disabled = true; btn.textContent = 'Saving...';
 
@@ -921,6 +1022,7 @@ function resetProductForm() {
 $('#cancel-edit').addEventListener('click', resetProductForm);
 
 function editProduct(id) {
+  if (currentUserRole !== 'owner') return;
   const p = DB.products.find(x => x.id === id);
   if (!p) return;
   editingProductId = id;
@@ -945,8 +1047,9 @@ function editProduct(id) {
 
 function renderProducts() {
   $('#prod-count').textContent = DB.products.length;
+  const isOwner = currentUserRole === 'owner';
   $('#products-table').innerHTML = DB.products.length ? `
-    <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Disc</th><th>Final</th><th>Cost</th><th>Stock</th><th>Action</th></tr></thead>
+    <thead><tr><th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Disc</th><th>Final</th><th>Cost</th><th>Stock</th>${isOwner ? '<th>Action</th>' : ''}</tr></thead>
     <tbody>${DB.products.map(p => `
       <tr>
         <td><img src="${esc(p.image_url)}" class="w-12 h-12 object-cover rounded-lg" onerror="this.style.visibility='hidden'"></td>
@@ -957,15 +1060,16 @@ function renderProducts() {
         <td class="font-bold text-red-800">${money(p.total_price)}</td>
         <td class="text-xs ${Number(p.cost_price) > 0 ? 'text-gray-500' : 'text-red-500 font-bold'}">${money(p.cost_price)}</td>
         <td class="${Number(p.stock) <= 2 ? 'text-red-600 font-bold' : ''}">${p.stock ?? '—'}</td>
-        <td class="whitespace-nowrap">
+        ${isOwner ? `<td class="whitespace-nowrap">
           <button onclick="editProduct(${p.id})" class="text-blue-600 hover:underline text-xs font-semibold mr-2">Edit</button>
           <button onclick="deleteProduct(${p.id})" class="text-red-600 hover:underline text-xs font-semibold">Delete</button>
-        </td>
+        </td>` : ''}
       </tr>`).join('')}</tbody>`
     : '<tbody><tr><td class="text-gray-400 py-6 text-center">No products yet.</td></tr></tbody>';
 }
 
 async function deleteProduct(id) {
+  if (currentUserRole !== 'owner') { alert('⛔ Only the Owner can delete products.'); return; }
   if (!confirm('Delete this product permanently?')) return;
   await supabaseClient.from('products').delete().eq('id', id);
   await loadAll();
@@ -991,6 +1095,8 @@ function renderOrders() {
 
   const box = $('#orders-list');
   if (!list.length) { box.innerHTML = '<div class="admin-card text-center text-gray-400 py-10">No orders found.</div>'; return; }
+
+  const canSeeFinancials = ['owner', 'accountant'].includes(currentUserRole);
 
   box.innerHTML = list.map(o => {
     const advance = Number(o.advance_paid||0);
@@ -1018,13 +1124,18 @@ function renderOrders() {
           <p class="text-gray-600">📞 ${esc(o.phone)}</p>
           <p class="text-gray-600 text-xs">🏠 ${esc(o.city||'')} ${esc(o.address||'')}</p>
         </div>
+        ${canSeeFinancials ? `
         <div class="bg-green-50 rounded-xl p-3">
           <p class="font-semibold text-green-900 mb-1">💰 Payment</p>
           <p>Total: <b>${money(o.total)}</b></p>
           <p>Advance: <b class="text-green-700">${money(o.advance_paid)}</b></p>
           <p>Balance: <b class="${balance > 0 ? 'text-red-700' : 'text-green-700'}">${money(balance)}</b></p>
           ${o.balance_paid > 0 ? `<p class="text-xs text-green-700">Balance received: ${money(o.balance_paid)}</p>` : ''}
-        </div>
+        </div>` : `
+        <div class="bg-gray-50 rounded-xl p-3">
+          <p class="font-semibold text-gray-900 mb-1">💰 Payment</p>
+          <p class="text-xs text-gray-500">Financial details hidden for your role.</p>
+        </div>`}
         <div class="bg-blue-50 rounded-xl p-3">
           <p class="font-semibold text-blue-900 mb-1">📦 Delivery</p>
           ${o.tcs_tracking ? `<p>TCS ID: <b>${esc(o.tcs_tracking)}</b></p>` : '<p class="text-gray-500 text-xs">Not dispatched</p>'}
@@ -1038,8 +1149,8 @@ function renderOrders() {
       </div>
 
       <div class="flex flex-wrap gap-2 pt-2 border-t border-amber-100">
-        ${o.payment_proof_url ? `<a href="${esc(o.payment_proof_url)}" target="_blank" class="admin-btn admin-btn-ghost">🧾 View Proof</a>` : ''}
-        ${o.payment_status !== 'verified' && o.payment_proof_url ? `<button onclick="verifyPayment(${o.id})" class="admin-btn admin-btn-success">✅ Verify Advance</button>` : ''}
+        ${o.payment_proof_url && canSeeFinancials ? `<a href="${esc(o.payment_proof_url)}" target="_blank" class="admin-btn admin-btn-ghost">🧾 View Proof</a>` : ''}
+        ${o.payment_status !== 'verified' && o.payment_proof_url && ['owner','accountant'].includes(currentUserRole) ? `<button onclick="verifyPayment(${o.id})" class="admin-btn admin-btn-success">✅ Verify Advance</button>` : ''}
         <button onclick="openOrderModal(${o.id})" class="admin-btn admin-btn-primary">⚙️ Manage</button>
         <a href="https://wa.me/${normPhone(o.phone)}?text=${encodeURIComponent('Assalam-o-Alaikum ' + o.customer_name + '! Regarding order ' + o.order_code)}" target="_blank" class="admin-btn admin-btn-ghost">💬 Chat</a>
       </div>
@@ -1048,6 +1159,7 @@ function renderOrders() {
 }
 
 async function verifyPayment(id) {
+  if (!['owner','accountant'].includes(currentUserRole)) { alert('⛔ Only Owner or Accountant can verify payments.'); return; }
   const o = DB.orders.find(x => x.id === id);
   if (!o) return;
   const advance = Number(o.advance_paid) || Math.round((Number(o.total)||0) * (Number(o.advance_percent)||50) / 100);
@@ -1071,6 +1183,12 @@ function openOrderModal(id) {
   const advance = Number(o.advance_paid||0);
   const balance = Number(o.total||0) - advance - Number(o.balance_paid||0);
 
+  const isOwner = currentUserRole === 'owner';
+  const isAccountant = currentUserRole === 'accountant';
+  const isPacker = currentUserRole === 'packer';
+  const isSupport = currentUserRole === 'support';
+  const canSeeFinancials = isOwner || isAccountant;
+
   $('#order-modal-body').innerHTML = `
     <div class="flex justify-between items-center mb-4">
       <h3 class="text-lg font-bold text-red-900">Order ${esc(o.order_code)}</h3>
@@ -1085,32 +1203,35 @@ function openOrderModal(id) {
               `<option value="${s}" ${o.order_status===s?'selected':''}>${s}</option>`).join('')}
           </select>
         </div>
+        ${canSeeFinancials ? `
         <div><label class="block text-xs font-semibold text-gray-600 mb-1">Payment Status</label>
           <select id="m-pay" class="admin-input">
             ${['pending','submitted','verified','rejected'].map(s =>
               `<option value="${s}" ${o.payment_status===s?'selected':''}>${s}</option>`).join('')}
           </select>
-        </div>
+        </div>` : `<div><label class="block text-xs font-semibold text-gray-600 mb-1">Payment Status</label><input class="admin-input" value="${esc(o.payment_status)}" readonly></div>`}
       </div>
 
+      ${canSeeFinancials ? `
       <div class="grid grid-cols-3 gap-3">
         <div><label class="block text-xs font-semibold text-gray-600 mb-1">Total</label>
           <input class="admin-input" value="${money(o.total)}" readonly></div>
         <div><label class="block text-xs font-semibold text-gray-600 mb-1">Advance Paid</label>
-          <input id="m-advance" type="number" min="0" class="admin-input" value="${advance}"></div>
+          <input id="m-advance" type="number" min="0" class="admin-input" value="${advance}" ${!isOwner ? 'readonly' : ''}></div>
         <div><label class="block text-xs font-semibold text-gray-600 mb-1">Balance Due</label>
           <input class="admin-input" value="${money(balance)}" readonly></div>
-      </div>
+      </div>` : ''}
 
       <div class="advance-info-box">
         <h4>🚚 TCS Dispatch</h4>
         <label class="block text-xs font-semibold text-gray-600 mb-1 mt-2">TCS Tracking ID</label>
         <input id="m-tcs" class="admin-input" value="${esc(o.tcs_tracking||'')}" placeholder="e.g. 12345678901">
+        ${canSeeFinancials ? `
         <label class="block text-xs font-semibold text-gray-600 mb-1 mt-3">Balance collection method</label>
         <select id="m-balance-method" class="admin-input">
           <option value="cod" ${o.balance_method==='cod'?'selected':''}>COD — TCS collects cash on delivery</option>
           <option value="prepaid" ${o.balance_method==='prepaid'?'selected':''}>Prepaid — customer pays online before delivery</option>
-        </select>
+        </select>` : `<input type="hidden" id="m-balance-method" value="${esc(o.balance_method||'cod')}">`}
       </div>
 
       <div><label class="block text-xs font-semibold text-gray-600 mb-1">Internal Note</label>
@@ -1118,9 +1239,11 @@ function openOrderModal(id) {
 
       <div class="flex flex-wrap gap-2 pt-2 border-t">
         <button onclick="saveOrder(${o.id})" class="admin-btn admin-btn-ghost flex-1 py-3">💾 Save</button>
-        ${o.order_status === 'dispatched'
+        ${o.order_status === 'dispatched' && canSeeFinancials
           ? `<button onclick="openMarkDelivered(${o.id})" class="admin-btn admin-btn-success flex-1 py-3">✅ Mark Delivered & Confirm Payment</button>`
-          : `<button onclick="openDispatch(${o.id})" class="admin-btn admin-btn-primary flex-1 py-3">🚚 Dispatch & Send TCS ID</button>`}
+          : (o.order_status !== 'delivered' && o.order_status !== 'cancelled' && (isOwner || isPacker)
+            ? `<button onclick="openDispatch(${o.id})" class="admin-btn admin-btn-primary flex-1 py-3">🚚 Dispatch & Send TCS ID</button>`
+            : '')}
       </div>
     </div>`;
 
@@ -1138,8 +1261,8 @@ async function saveOrder(id) {
   if (!o) return;
 
   const newStatus = $('#m-status').value;
-  const newPayStatus = $('#m-pay').value;
-  const currentAdvance = Number($('#m-advance').value) || 0;
+  const newPayStatus = $('#m-pay') ? $('#m-pay').value : o.payment_status;
+  const currentAdvance = $('#m-advance') ? (Number($('#m-advance').value) || 0) : Number(o.advance_paid || 0);
   
   let newBalancePaid = Number(o.balance_paid || 0);
   const total = Number(o.total || 0);
@@ -1156,7 +1279,7 @@ async function saveOrder(id) {
     advance_paid: currentAdvance,
     balance_paid: newBalancePaid,
     tcs_tracking: $('#m-tcs').value || null,
-    balance_method: $('#m-balance-method').value,
+    balance_method: $('#m-balance-method') ? $('#m-balance-method').value : o.balance_method,
     admin_note: $('#m-note').value || null,
     updated_at: new Date().toISOString()
   }).eq('id', id);
@@ -1170,13 +1293,14 @@ window.saveOrder = saveOrder;
    DISPATCH FLOW
 ============================================================ */
 function openDispatch(id) {
+  if (!['owner','packer'].includes(currentUserRole)) { alert('⛔ Only Owner or Packer can dispatch orders.'); return; }
   const o = DB.orders.find(x => x.id === id);
   if (!o) return;
 
   const advance = Number(o.advance_paid||0);
   const balance = Number(o.total||0) - advance;
   const tcs = $('#m-tcs').value.trim();
-  const method = $('#m-balance-method').value;
+  const method = $('#m-balance-method') ? $('#m-balance-method').value : 'cod';
 
   if (o.payment_status !== 'verified') {
     alert('⛔ Cannot dispatch: Advance payment is NOT verified yet.\n\nPlease verify the customer\'s advance screenshot first.');
@@ -1226,6 +1350,7 @@ Safdar Hussain — Traditional Artistry Work
 window.openDispatch = openDispatch;
 
 async function doDispatch(id, tcs, method) {
+  if (!['owner','packer'].includes(currentUserRole)) return;
   const o = DB.orders.find(x => x.id === id);
   const advance = Number(o.advance_paid||0);
   const balance = Number(o.total||0) - advance;
@@ -1268,6 +1393,7 @@ window.doDispatch = doDispatch;
    MARK DELIVERED FLOW
 ============================================================ */
 function openMarkDelivered(id) {
+  if (!['owner','accountant'].includes(currentUserRole)) { alert('⛔ Only Owner or Accountant can confirm delivery.'); return; }
   const o = DB.orders.find(x => x.id === id);
   if (!o) return;
   const advance = Number(o.advance_paid||0);
@@ -1305,6 +1431,7 @@ function openMarkDelivered(id) {
 window.openMarkDelivered = openMarkDelivered;
 
 async function confirmDelivery(id) {
+  if (!['owner','accountant'].includes(currentUserRole)) return;
   const o = DB.orders.find(x => x.id === id);
   const amountReceived = Number($('#confirm-amount').value) || 0;
   const advance = Number(o.advance_paid||0);
@@ -1403,6 +1530,7 @@ function renderPayments() {
 }
 
 async function rejectPayment(id) {
+  if (!['owner','accountant'].includes(currentUserRole)) return;
   if (!confirm('Reject this payment proof?')) return;
   await supabaseClient.from('orders').update({ payment_status:'rejected', updated_at:new Date().toISOString() }).eq('id', id);
   await loadAll();
@@ -1444,10 +1572,12 @@ function renderReviews() {
 }
 
 async function approveReview(id, val) {
+  if (!['owner','support'].includes(currentUserRole)) { alert('⛔ Only Owner or Support can approve reviews.'); return; }
   await supabaseClient.from('reviews').update({ is_approved: val }).eq('id', id);
   await loadAll();
 }
 async function deleteReview(id) {
+  if (!['owner','support'].includes(currentUserRole)) { alert('⛔ Only Owner or Support can delete reviews.'); return; }
   if (!confirm('Delete this review?')) return;
   await supabaseClient.from('reviews').delete().eq('id', id);
   await loadAll();
@@ -1460,6 +1590,7 @@ window.deleteReview = deleteReview;
 ============================================================ */
 $('#expense-form').addEventListener('submit', async e => {
   e.preventDefault();
+  if (!['owner','accountant'].includes(currentUserRole)) { alert('⛔ Only Owner or Accountant can add expenses.'); return; }
   await supabaseClient.from('expenses').insert({
     title: $('#exp-title').value,
     category: $('#exp-category').value,
@@ -1481,11 +1612,12 @@ function renderExpenses() {
         <td class="font-semibold">${esc(e.title)}</td>
         <td><span class="pill pill-dispatched">${esc(e.category||'Other')}</span></td>
         <td class="font-bold text-red-800">${money(e.amount)}</td>
-        <td><button onclick="deleteExpense(${e.id})" class="text-red-600 text-xs hover:underline">Delete</button></td>
+        <td>${['owner','accountant'].includes(currentUserRole) ? `<button onclick="deleteExpense(${e.id})" class="text-red-600 text-xs hover:underline">Delete</button>` : '—'}</td>
       </tr>`).join('')}</tbody>`
     : '<tbody><tr><td class="text-gray-400 py-6 text-center">No expenses recorded.</td></tr></tbody>';
 }
 async function deleteExpense(id) {
+  if (!['owner','accountant'].includes(currentUserRole)) { alert('⛔ Only Owner or Accountant can delete expenses.'); return; }
   if (!confirm('Delete this expense?')) return;
   await supabaseClient.from('expenses').delete().eq('id', id);
   await loadAll();
@@ -1497,6 +1629,7 @@ window.deleteExpense = deleteExpense;
 ============================================================ */
 $('#location-form').addEventListener('submit', async e => {
   e.preventDefault();
+  if (currentUserRole !== 'owner') { alert('⛔ Only the Owner can manage store locations.'); return; }
   const payload = {
     name: $('#loc-name').value,
     city: $('#loc-city').value,
@@ -1539,6 +1672,7 @@ function renderLocations() {
     </div>`).join('');
 }
 function editLocation(id) {
+  if (currentUserRole !== 'owner') return;
   const l = DB.locations.find(x => x.id === id);
   if (!l) return;
   editingLocId = id;
@@ -1553,6 +1687,7 @@ function editLocation(id) {
   window.scrollTo({ top: 0, behavior:'smooth' });
 }
 async function deleteLocation(id) {
+  if (currentUserRole !== 'owner') return;
   if (!confirm('Delete this store location?')) return;
   await supabaseClient.from('store_locations').delete().eq('id', id);
   await loadAll();
@@ -1565,6 +1700,7 @@ window.deleteLocation = deleteLocation;
 ============================================================ */
 $('#ticker-form').addEventListener('submit', async e => {
   e.preventDefault();
+  if (currentUserRole !== 'owner') { alert('⛔ Only the Owner can manage ticker messages.'); return; }
   const id = $('#tick-id').value;
   const payload = {
     message: $('#tick-message').value,
@@ -1601,6 +1737,7 @@ function renderTickers() {
     </div>`).join('');
 }
 function editTicker(id) {
+  if (currentUserRole !== 'owner') return;
   const t = DB.tickers.find(x => x.id === id);
   if (!t) return;
   $('#tick-id').value = t.id;
@@ -1609,8 +1746,8 @@ function editTicker(id) {
   $('#tick-cancel').classList.remove('hidden');
   window.scrollTo({ top: 0, behavior:'smooth' });
 }
-async function toggleTicker(id, val) { await supabaseClient.from('ticker_messages').update({ is_active: val }).eq('id', id); await loadAll(); }
-async function deleteTicker(id) { if (!confirm('Delete this message?')) return; await supabaseClient.from('ticker_messages').delete().eq('id', id); await loadAll(); }
+async function toggleTicker(id, val) { if (currentUserRole !== 'owner') return; await supabaseClient.from('ticker_messages').update({ is_active: val }).eq('id', id); await loadAll(); }
+async function deleteTicker(id) { if (currentUserRole !== 'owner') return; if (!confirm('Delete this message?')) return; await supabaseClient.from('ticker_messages').delete().eq('id', id); await loadAll(); }
 window.editTicker = editTicker;
 window.toggleTicker = toggleTicker;
 window.deleteTicker = deleteTicker;
@@ -1630,6 +1767,7 @@ function renderSettings() {
 
 $('#settings-form').addEventListener('submit', async e => {
   e.preventDefault();
+  if (currentUserRole !== 'owner') { alert('⛔ Only the Owner can change settings.'); return; }
   const rows = SETTING_KEYS.map(k => ({ key: k, value: $('#set_' + k).value }));
   const { error } = await supabaseClient.from('settings').upsert(rows, { onConflict:'key' });
   if (error) { flash('#settings-msg', 'Error: ' + error.message, 'red'); return; }
