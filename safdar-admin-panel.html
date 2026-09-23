@@ -163,7 +163,7 @@
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Discount %</label><input type="number" id="discount_percent" min="0" max="90" value="0" class="admin-input"></div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">TCS Cost</label><input type="number" id="tcs_cost" min="0" value="300" class="admin-input"></div>
             <div><label class="block text-xs font-semibold text-gray-600 mb-1">Final Price *</label><input type="number" id="total_price" required min="0" class="admin-input"></div>
-            <div><label class="block text-xs font-semibold text-gray-600 mb-1 text-red-600">Cost / Mfg *</label><input type="number" id="cost_price" min="0" value="0" class="admin-input"></div>
+            <div><label class="block text-xs font-semibold text-red-600 mb-1">Cost / Mfg *</label><input type="number" id="cost_price" min="0" value="0" class="admin-input"></div>
           </div>
           <p id="margin-hint" class="text-xs text-green-700 font-semibold"></p>
           <div><label class="block text-xs font-semibold text-gray-600 mb-1">Full Description *</label><textarea id="description" required rows="3" class="admin-input"></textarea></div>
@@ -583,7 +583,7 @@ async function sendWhatsApp(phone, message){
 }
 
 /* ============================================================
-   DASHBOARD (UPGRADED)
+   DASHBOARD (UPGRADED V2 - COGS & OPEX SEPARATION)
 ============================================================ */
 function renderDashboard() {
   const today = new Date().toISOString().slice(0,10);
@@ -591,16 +591,17 @@ function renderDashboard() {
   const active = DB.orders.filter(o => o.order_status !== 'cancelled');
   
   const revenue  = active.reduce((a,o) => a + orderRevenue(o), 0);
-  const prodCost = active.reduce((a,o) => a + orderCost(o), 0);
+  const cogs     = active.reduce((a,o) => a + orderCost(o), 0);
   const expenses = DB.expenses.reduce((a,e) => a + Number(e.amount||0), 0);
-  const netProfit = revenue - prodCost - expenses;
+  
+  const grossProfit = revenue - cogs;
+  const netProfit = grossProfit - expenses;
   
   const pending = DB.orders.filter(o => !['delivered','cancelled'].includes(o.order_status)).length;
-  const delivered = DB.orders.filter(o => o.order_status === 'delivered').length;
   const awaitingPay = DB.orders.filter(o => o.payment_status === 'submitted').length;
-  const pendingReviews = DB.reviews.filter(r => !r.is_approved).length;
   const aov = active.length > 0 ? (revenue / active.length) : 0;
-  const marginPct = revenue > 0 ? ((netProfit / revenue) * 100).toFixed(1) : 0;
+  const netMarginPct = revenue > 0 ? ((netProfit / revenue) * 100).toFixed(1) : 0;
+  const grossMarginPct = revenue > 0 ? ((grossProfit / revenue) * 100).toFixed(1) : 0;
 
   const newOrders = DB.orders.filter(o => o.order_status === 'new').length;
   const ordersBadge = $('#tab-orders-badge');
@@ -608,30 +609,26 @@ function renderDashboard() {
   newOrders ? (ordersBadge.textContent = newOrders, ordersBadge.classList.remove('hidden')) : ordersBadge.classList.add('hidden');
   awaitingPay ? (payBadge.textContent = awaitingPay, payBadge.classList.remove('hidden')) : payBadge.classList.add('hidden');
 
-  // KPIs
   $('#dash-kpis').innerHTML = `
     <div class="admin-kpi"><div class="kpi-value">${visitsToday}</div><div class="kpi-label">Visitors Today</div></div>
     <div class="admin-kpi" style="border-left-color:#0D7377"><div class="kpi-value" style="color:#0D7377">${money(revenue)}</div><div class="kpi-label">Gross Revenue</div></div>
-    <div class="admin-kpi" style="border-left-color:#1A5F2A"><div class="kpi-value" style="color:#1A5F2A">${money(netProfit)}</div><div class="kpi-label">Net Profit</div></div>
-    <div class="admin-kpi" style="border-left-color:#D94F70"><div class="kpi-value" style="color:#D94F70">${marginPct}%</div><div class="kpi-label">Profit Margin</div></div>
-    <div class="admin-kpi" style="border-left-color:#C9A227"><div class="kpi-value" style="color:#C9A227">${money(aov)}</div><div class="kpi-label">Avg Order Value</div></div>
+    <div class="admin-kpi" style="border-left-color:#C9A227"><div class="kpi-value" style="color:#C9A227">${money(grossProfit)}</div><div class="kpi-label">Gross Profit (${grossMarginPct}%)</div></div>
+    <div class="admin-kpi" style="border-left-color:#1A5F2A"><div class="kpi-value" style="color:#1A5F2A">${money(netProfit)}</div><div class="kpi-label">Net Profit (${netMarginPct}%)</div></div>
+    <div class="admin-kpi" style="border-left-color:#D94F70"><div class="kpi-value" style="color:#D94F70">${money(aov)}</div><div class="kpi-label">Avg Order Value</div></div>
     <div class="admin-kpi" style="border-left-color:#9333ea"><div class="kpi-value" style="color:#9333ea">${DB.orders.length}</div><div class="kpi-label">Total Orders</div></div>
     <div class="admin-kpi" style="border-left-color:#6B0F0F"><div class="kpi-value" style="color:#6B0F0F">${pending}</div><div class="kpi-label">In Progress</div></div>
     <div class="admin-kpi" style="border-left-color:#DC2626"><div class="kpi-value" style="color:#DC2626">${awaitingPay}</div><div class="kpi-label">Awaiting Verify</div></div>
   `;
 
-  // Profit & Loss Summary
   $('#dash-profit').innerHTML = `
     <div class="profit-box profit-revenue"><div class="pb-label">Gross Revenue</div><div class="pb-value">${money(revenue)}</div></div>
-    <div class="profit-box profit-cost"><div class="pb-label">Mfg. Cost</div><div class="pb-value">− ${money(prodCost)}</div></div>
-    <div class="profit-box profit-expense"><div class="pb-label">Expenses</div><div class="pb-value">− ${money(expenses)}</div></div>
+    <div class="profit-box profit-cost"><div class="pb-label">COGS (Mfg. Cost)</div><div class="pb-value" style="color:#DC2626">− ${money(cogs)}</div></div>
+    <div class="profit-box profit-expense"><div class="pb-label">Operating Expenses</div><div class="pb-value" style="color:#DC2626">− ${money(expenses)}</div></div>
     <div class="profit-box profit-net ${netProfit<0?'negative':''}"><div class="pb-label">Net Profit</div><div class="pb-value">${money(netProfit)}</div></div>
   `;
 
-  // Chart.js - Net Profit Trend (Last 14 Days)
   renderProfitChart(active, DB.expenses);
 
-  // Top Selling Products
   const sales = {};
   active.forEach(o => (o.items||[]).forEach(it => {
     const k = it.name || 'Unknown';
@@ -650,13 +647,9 @@ function renderDashboard() {
       </div>
     </div>`).join('') : '<p class="text-gray-400 text-xs">No sales yet.</p>';
 
-  // Management Discussion & Analysis (MD&A)
-  generateMDNA(active, prodCost, expenses, revenue, netProfit);
-
-  // Product Profitability Table
+  generateMDNA(active, cogs, expenses, revenue, grossProfit, netProfit);
   renderProfitabilityTable(sales);
 
-  // Recent Orders
   const recent = DB.orders.slice(0,6);
   $('#dash-orders').innerHTML = recent.length ? `
     <thead><tr><th>Order</th><th>Customer</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead>
@@ -723,68 +716,47 @@ function renderProfitChart(activeOrders, expenses) {
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (context) => `Net: Rs. ${context.parsed.y.toLocaleString()}`
-          }
-        }
+        tooltip: { callbacks: { label: (context) => `Net: Rs. ${context.parsed.y.toLocaleString()}` } }
       },
       scales: {
-        y: {
-          beginAtZero: true,
-          grid: { color: '#F3F4F6' },
-          ticks: { callback: (value) => 'Rs. ' + value.toLocaleString() }
-        },
+        y: { beginAtZero: true, grid: { color: '#F3F4F6' }, ticks: { callback: (value) => 'Rs. ' + value.toLocaleString() } },
         x: { grid: { display: false } }
       }
     }
   });
 }
 
-function generateMDNA(activeOrders, prodCost, expenses, revenue, netProfit) {
+function generateMDNA(activeOrders, cogs, expenses, revenue, grossProfit, netProfit) {
   const box = $('#dash-mdna');
   let html = '';
-  const margin = revenue > 0 ? ((netProfit / revenue) * 100).toFixed(1) : 0;
+  const netMargin = revenue > 0 ? ((netProfit / revenue) * 100).toFixed(1) : 0;
 
-  // 1. Overall Health
-  if (netProfit > 0) {
-    html += `<p>✅ <b>Healthy Business:</b> You are currently profitable. Net margin is <b>${margin}%</b>.</p>`;
+  if (cogs === 0 && revenue > 0) {
+    html += `<p style="color:#DC2626; font-weight:bold;">🚨 CRITICAL WARNING: Your Manufacturing Cost (COGS) is currently Rs. 0. This means your profit is being calculated as 100%. You MUST go to the "Products" tab and enter the actual cost of each product in the "Cost / Mfg" field. Until you do this, your financial reports will be completely inaccurate.</p>`;
   } else {
-    html += `<p>🚨 <b>Critical Alert:</b> You are running at a loss. Net margin is <b>${margin}%</b>. Immediate action required.</p>`;
+    if (netProfit > 0) {
+      html += `<p>✅ <b>Healthy Business:</b> You are currently profitable. Net margin is <b>${netMargin}%</b>.</p>`;
+    } else {
+      html += `<p>🚨 <b>Critical Alert:</b> You are running at a loss. Net margin is <b>${netMargin}%</b>. Immediate action required.</p>`;
+    }
+
+    const grossPct = revenue > 0 ? ((grossProfit / revenue) * 100).toFixed(1) : 0;
+    html += `<p>📊 <b>Margin Analysis:</b> Your Gross Margin is <b>${grossPct}%</b> (after manufacturing costs), but your Net Margin is <b>${netMargin}%</b> (after operating expenses). This means your overhead costs are eating up ${(grossPct - netMargin).toFixed(1)}% of your revenue.</p>`;
+
+    const sales = {};
+    activeOrders.forEach(o => (o.items||[]).forEach(it => {
+      const k = it.name || 'Unknown';
+      sales[k] = sales[k] || { qty:0, rev:0, cost:0 };
+      sales[k].qty += Number(it.qty||0);
+      sales[k].rev += Number(it.price||0)*Number(it.qty||0);
+      sales[k].cost += Number(it.cost||0)*Number(it.qty||0);
+    }));
+    const lossItems = Object.entries(sales).filter(([_,v]) => v.rev < v.cost);
+    if (lossItems.length > 0) {
+      html += `<p>🚨 <b>Loss-Making Products Detected:</b> ${lossItems.map(x => x[0]).join(', ')}. Please review their pricing immediately.</p>`;
+    }
   }
 
-  // 2. Cost Analysis
-  const costPct = revenue > 0 ? ((prodCost / revenue) * 100).toFixed(1) : 0;
-  if (costPct > 60) {
-    html += `<p>⚠️ <b>High Manufacturing Cost:</b> Your product costs are eating up <b>${costPct}%</b> of your revenue. Try to negotiate with suppliers or increase prices.</p>`;
-  } else {
-    html += `<p>✅ <b>Healthy Margins:</b> Your manufacturing costs are at <b>${costPct}%</b> of revenue, which is sustainable.</p>`;
-  }
-
-  // 3. Loss-Making Products
-  const sales = {};
-  activeOrders.forEach(o => (o.items||[]).forEach(it => {
-    const k = it.name || 'Unknown';
-    sales[k] = sales[k] || { qty:0, rev:0, cost:0 };
-    sales[k].qty += Number(it.qty||0);
-    sales[k].rev += Number(it.price||0)*Number(it.qty||0);
-    sales[k].cost += Number(it.cost||0)*Number(it.qty||0);
-  }));
-  
-  const lossItems = Object.entries(sales).filter(([_,v]) => v.rev < v.cost);
-  if (lossItems.length > 0) {
-    html += `<p>🚨 <b>Loss-Making Products Detected:</b> ${lossItems.map(x => x[0]).join(', ')}. Please review their pricing immediately.</p>`;
-  } else {
-    html += `<p>✅ <b>No Loss-Making Products:</b> Every product sold is generating a positive margin.</p>`;
-  }
-
-  // 4. Expenses Check
-  const expPct = revenue > 0 ? ((expenses / revenue) * 100).toFixed(1) : 0;
-  if (expPct > 30) {
-    html += `<p>⚠️ <b>High Overhead:</b> Your operational expenses are <b>${expPct}%</b> of revenue. Look for areas to cut back (e.g., unnecessary marketing spend).</p>`;
-  }
-
-  // 5. E-commerce Trend
   if (activeOrders.length > 0) {
     const aov = revenue / activeOrders.length;
     html += `<p>📈 <b>E-commerce Trend:</b> Your Average Order Value is <b>${money(aov)}</b>. To increase profit, consider creating product bundles or offering free shipping above a certain amount.</p>`;
