@@ -1,6 +1,7 @@
 /* ============================================================
    Traditional Artistry Work – Customer App (Supabase)
    Original features + orders/reviews/tracking/stores/ticker
+   + Payment verification warnings
    ============================================================ */
 
 // ============ STATE ============
@@ -12,8 +13,6 @@ let selectedRating = 0;
 let settings = {};
 
 // ============ HELPERS ============
-// money(), esc(), normPhone(), waLink(), showToast(), flash(),
-// sendWhatsApp() come from config.js (already loaded before this file)
 const $  = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 
@@ -48,7 +47,7 @@ async function loadProducts() {
 }
 
 /* ============================================================
-   RENDER PRODUCTS  (adds discount badge + old price)
+   RENDER PRODUCTS
 ============================================================ */
 function renderProducts(filter = 'all') {
   const grid = document.getElementById('products-grid');
@@ -97,7 +96,7 @@ function renderProducts(filter = 'all') {
 }
 
 /* ============================================================
-   PRODUCT MODAL  (+ reviews, discount, advance notice)
+   PRODUCT MODAL
 ============================================================ */
 async function openProductModal(id) {
   const p = products.find(pr => pr.id === id);
@@ -211,7 +210,6 @@ async function openProductModal(id) {
   document.getElementById('close-modal').onclick = closeProductModal;
   document.getElementById('modal-overlay').onclick = closeProductModal;
 
-  // Wire up star input
   const starBox = document.getElementById('star-input');
   if (starBox) {
     starBox.querySelectorAll('span').forEach(span => {
@@ -236,7 +234,6 @@ async function openProductModal(id) {
     });
   }
 
-  // Load approved reviews
   loadProductReviews(id);
 }
 
@@ -256,7 +253,7 @@ function closeProductModal() {
 }
 
 /* ============================================================
-   REVIEWS – LOAD & SUBMIT
+   REVIEWS
 ============================================================ */
 async function loadProductReviews(productId) {
   const box = document.getElementById('modal-reviews');
@@ -336,7 +333,6 @@ async function submitReview() {
 
     showToast('✅ Review submitted! It will appear after approval.', 'success');
 
-    // Reset form
     document.getElementById('rev-name').value = '';
     document.getElementById('rev-phone').value = '';
     document.getElementById('rev-comment').value = '';
@@ -443,7 +439,8 @@ function closeCart() {
 }
 
 /* ============================================================
-   CHECKOUT MODAL (info + advance + proof upload)
+   CHECKOUT MODAL
+   (now with VERIFY-BEFORE-YOU-PAY warning box)
 ============================================================ */
 function openCheckout() {
   if (cart.length === 0) { showToast('Your cart is empty', 'error'); return; }
@@ -455,8 +452,8 @@ function openCheckout() {
   const balanceAmount = total - advanceAmount;
 
   const jazzcash = settings.payment_jazzcash || '0333-3882131';
-  const easypaisa = settings.payment_easypaisa || '0333-3882131';
-  const bank = settings.payment_bank || 'HBL – 1234 5678 9012 3456';
+  const easypaisa = settings.payment_easypaisa || '0337-031234';
+  const bank = settings.payment_bank || '(Contact us on WhatsApp for bank details)';
   const title = settings.payment_title || 'Safdar Hussain';
 
   const itemsHtml = cart.map(item => {
@@ -500,15 +497,24 @@ function openCheckout() {
         </div>
       </div>
 
+      <!-- ============ OFFICIAL NUMBERS VERIFICATION BOX ============ -->
+      <div style="background:#FEF2F2;border:2px solid #DC2626;border-radius:0.85rem;padding:1rem;margin-bottom:1rem;">
+        <p style="font-weight:800;color:#991B1B;font-size:0.9rem;margin-bottom:0.5rem;">🔒 VERIFY BEFORE YOU PAY</p>
+        <p style="font-size:0.8rem;color:#7F1D1D;line-height:1.5;">
+          Pay ONLY to the numbers below. If any number looks different in WhatsApp or SMS — <b>STOP and call 0333-3882131</b> before sending money.
+        </p>
+        <div style="background:#fff;border-radius:0.6rem;padding:0.7rem;margin-top:0.6rem;font-size:0.83rem;">
+          <p style="margin:0.2rem 0;"><b>📱 EasyPaisa:</b> 0337-031234</p>
+          <p style="margin:0.2rem 0;"><b>📱 JazzCash:</b> ${esc(jazzcash)}</p>
+          ${bank && !bank.includes('Contact') ? `<p style="margin:0.2rem 0;"><b>🏦 Bank:</b> ${esc(bank)}</p>` : ''}
+          <p style="margin:0.2rem 0;"><b>👤 Account Title:</b> ${esc(title)}</p>
+          <p style="margin:0.2rem 0;"><b>📞 Official WhatsApp:</b> 0333-3882131</p>
+        </div>
+      </div>
+
       <div class="advance-info-box mb-4">
         <h4>💳 Advance Payment (${advancePercent}%)</h4>
-        <p>Please send <span class="advance-amount">${money(advanceAmount)}</span> to one of the accounts below, then upload a screenshot of the transfer.</p>
-        <div class="mt-3 text-sm space-y-1">
-          <p><b>JazzCash:</b> ${esc(jazzcash)}</p>
-          <p><b>EasyPaisa:</b> ${esc(easypaisa)}</p>
-          <p><b>Bank:</b> ${esc(bank)}</p>
-          <p><b>Account Title:</b> ${esc(title)}</p>
-        </div>
+        <p>Please send <span class="advance-amount">${money(advanceAmount)}</span> to any account above, then upload a screenshot of the transfer.</p>
         <p class="mt-2 text-xs"><b>Balance on delivery (COD):</b> ${money(balanceAmount)}</p>
       </div>
 
@@ -516,8 +522,8 @@ function openCheckout() {
         <div>
           <label class="block text-sm font-medium mb-1">Payment Method *</label>
           <select id="co-method" class="form-input">
-            <option value="JazzCash">JazzCash</option>
             <option value="EasyPaisa">EasyPaisa</option>
+            <option value="JazzCash">JazzCash</option>
             <option value="Bank Transfer">Bank Transfer</option>
           </select>
         </div>
@@ -566,7 +572,6 @@ async function submitOrder() {
   btn.textContent = 'Uploading...';
 
   try {
-    // 1. Upload payment proof
     const fileName = `payment_${Date.now()}_${proofFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
     const { error: upErr } = await supabaseClient.storage
       .from('payment-proofs')
@@ -575,7 +580,6 @@ async function submitOrder() {
     if (upErr) throw upErr;
     const proofUrl = supabaseClient.storage.from('payment-proofs').getPublicUrl(fileName).data.publicUrl;
 
-    // 2. Build items payload (with cost for admin profit calc)
     const items = cart.map(item => {
       const p = products.find(pr => pr.id === item.id);
       return {
@@ -592,7 +596,6 @@ async function submitOrder() {
     const advancePercent = Number(settings.advance_percent || 50);
     const advanceAmount = Math.round(total * advancePercent / 100);
 
-    // 3. Save order
     const orderPayload = {
       order_code: generateOrderCode(),
       customer_name: name,
@@ -619,7 +622,6 @@ async function submitOrder() {
 
     if (insErr) throw insErr;
 
-    // 4. WhatsApp message to admin (and optionally to customer later)
     const adminPhone = settings.whatsapp_number || '923333882131';
     const lines = items.map(i => `• ${i.name} (${i.color}) × ${i.qty}`).join('\n');
     const adminMsg =
@@ -635,11 +637,12 @@ ${lines}
 💳 Advance (${advancePercent}%): ${money(advanceAmount)}
 🏦 Method: ${method}
 
-🧾 Payment proof: ${proofUrl}`;
+🧾 Payment proof: ${proofUrl}
+
+🔒 VERIFY: Customer number is ${phone} — reply to them from OFFICIAL number only.`;
 
     await sendWhatsApp(adminPhone, adminMsg);
 
-    // Success
     showToast('✅ Order placed! We will confirm on WhatsApp shortly.', 'success');
     cart = [];
     saveCart();
@@ -672,7 +675,6 @@ async function lookupTracking() {
   resultBox.innerHTML = '<p class="text-sm text-gray-500">Searching...</p>';
 
   try {
-    // Match by order_code OR phone
     const { data, error } = await supabaseClient
       .from('orders')
       .select('*')
@@ -693,15 +695,30 @@ async function lookupTracking() {
       dispatched:'#92400E', delivered:'#065F46', cancelled:'#991B1B'
     };
 
+    const totalNum = Number(o.total||0);
+    const advanceNum = Number(o.advance_paid||0);
+    const balancePaidNum = Number(o.balance_paid||0);
+    const remaining = Math.max(0, totalNum - advanceNum - balancePaidNum);
+    const fullyPaid = o.order_status === 'delivered' && remaining <= 0;
+
     resultBox.innerHTML = `
       <div class="tracking-result">
         <h4>Order ${esc(o.order_code)}</h4>
         <p class="text-sm mb-2">Status: <span class="tracking-status-pill" style="background:${statusColors[o.order_status] || '#374151'}20;color:${statusColors[o.order_status] || '#374151'}">${esc(o.order_status)}</span></p>
+        ${fullyPaid ? '<p class="text-sm font-bold text-green-700 mb-2">💚 PAYMENT COMPLETE — PAID IN FULL</p>' : ''}
         ${o.tcs_tracking ? `
           <p class="text-sm mb-2">TCS Tracking ID: <b>${esc(o.tcs_tracking)}</b></p>
           <a href="https://www.tcsexpress.com/tracking?tracking_number=${encodeURIComponent(o.tcs_tracking)}" target="_blank" class="btn-primary text-sm inline-block">Track on TCS →</a>
         ` : '<p class="text-sm text-gray-500">TCS tracking ID will appear here once your order is dispatched.</p>'}
+
+        <div class="mt-3 pt-3 border-t border-teal-200 grid grid-cols-3 gap-2 text-xs">
+          <div class="bg-white rounded-lg p-2"><p class="text-gray-500">Total</p><p class="font-bold">${money(totalNum)}</p></div>
+          <div class="bg-white rounded-lg p-2"><p class="text-gray-500">Advance</p><p class="font-bold text-green-700">${money(advanceNum)}</p></div>
+          <div class="bg-white rounded-lg p-2"><p class="text-gray-500">Remaining</p><p class="font-bold ${remaining > 0 ? 'text-red-700' : 'text-green-700'}">${money(remaining)}</p></div>
+        </div>
+
         <p class="text-xs text-gray-500 mt-3">Placed on ${new Date(o.created_at).toLocaleDateString('en-PK')}</p>
+        <p class="text-xs text-gray-500 mt-1">🔒 Official contact: 0333-3882131</p>
       </div>
     `;
   } catch (err) {
@@ -725,13 +742,12 @@ async function loadTicker() {
 
     if (data && data.length) {
       const line = data.map(t => `<span class="ta-ticker-item">${esc(t.message)}</span>`).join('');
-      // Duplicate for seamless loop
       host.innerHTML = line + line;
     } else {
-      // Default messages
       host.innerHTML = `<span class="ta-ticker-item">✨ Authentic handmade crafts from Balochistan</span>
                         <span class="ta-ticker-item">💳 50% advance • Cash on Delivery via TCS</span>
-                        <span class="ta-ticker-item">📦 Nationwide shipping</span>`;
+                        <span class="ta-ticker-item">📦 Nationwide shipping</span>
+                        <span class="ta-ticker-item">🔒 Official site: safdarhussain1048-ui.github.io/traditional-artistry</span>`;
     }
   } catch (e) {
     console.warn('Ticker load failed', e);
@@ -775,11 +791,9 @@ async function loadStores() {
    INIT
 ============================================================ */
 document.addEventListener('DOMContentLoaded', async () => {
-  // Load public settings first (advance %, payment numbers)
   await loadPublicSettings();
   settings = window.TA_SETTINGS_CACHE || {};
 
-  // Track visit (once per browser session)
   if (!sessionStorage.getItem('ta_visited')) {
     sessionStorage.setItem('ta_visited', '1');
     trackVisit();
@@ -818,13 +832,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('cart-backdrop')?.addEventListener('click', closeCart);
   document.getElementById('checkout-btn')?.addEventListener('click', openCheckout);
 
-  // Tracking lookup
   document.getElementById('track-btn')?.addEventListener('click', lookupTracking);
   document.getElementById('track-input')?.addEventListener('keypress', e => {
     if (e.key === 'Enter') { e.preventDefault(); lookupTracking(); }
   });
 
-  // Contact form
   document.getElementById('contact-form')?.addEventListener('submit', (e) => {
     e.preventDefault();
     const status = document.getElementById('form-status');
