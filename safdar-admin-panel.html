@@ -308,6 +308,32 @@
 
     <!-- ================= STAFF TAB ================= -->
     <section id="tab-staff" class="tab-panel hidden">
+      <div class="admin-card mb-5">
+        <h2 class="text-lg font-bold text-red-900 mb-4">➕ Create New Staff Account</h2>
+        <form id="staff-register-form" class="grid md:grid-cols-4 gap-3 items-end">
+          <div class="md:col-span-2">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Employee Email *</label>
+            <input type="email" id="staff-email" required class="admin-input" placeholder="employee@email.com">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Password *</label>
+            <input type="password" id="staff-password" required class="admin-input" placeholder="min 6 chars" minlength="6">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Role *</label>
+            <select id="staff-role" class="admin-input">
+              <option value="support">Customer Support</option>
+              <option value="packer">Packer / Warehouse</option>
+              <option value="accountant">Accountant</option>
+              <option value="owner">Owner (Full Access)</option>
+            </select>
+          </div>
+          <div class="md:col-span-4">
+            <button type="submit" class="admin-btn admin-btn-primary w-full py-3">Create Employee Account</button>
+            <p class="text-xs text-amber-600 mt-2 text-center">⚠️ Creating an account will log you out immediately. Log back in as Owner to see the new staff in the list below.</p>
+          </div>
+        </form>
+      </div>
       <div class="admin-card">
         <h2 class="text-lg font-bold text-red-900 mb-4">👥 Staff Management</h2>
         <p class="text-sm text-gray-600 mb-4">Manage employee access. Owner has full access. Accountant: Orders, Payments, Expenses. Packer: Orders (Dispatch only). Support: Orders, Reviews.</p>
@@ -373,7 +399,7 @@ let currentOrderId = null;
 let sessionTimer = null;
 let lastActivity = Date.now();
 let profitChartInstance = null; 
-let currentUserRole = 'owner'; // Default to owner for safety
+let currentUserRole = 'owner'; 
 let currentUserId = null;
 
 /* ============================================================
@@ -465,10 +491,9 @@ $('#logout-btn').addEventListener('click', async () => {
 async function enterAdmin(session) {
   currentUserId = session.user.id;
   
-  // Fetch user role from profiles table
   try {
     const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', currentUserId).single();
-    currentUserRole = profile?.role || 'owner'; // Fallback to owner if no profile found
+    currentUserRole = profile?.role || 'owner';
   } catch(e) {
     console.warn('Profile fetch failed, defaulting to owner', e);
     currentUserRole = 'owner';
@@ -478,14 +503,12 @@ async function enterAdmin(session) {
   $('#admin-screen').classList.remove('hidden');
   $('#session-start').textContent = new Date().toLocaleString('en-PK');
   
-  // Apply role-based permissions before loading data
   applyRolePermissions();
   startSessionTimeout();
   loadAll();
 }
 
 function applyRolePermissions() {
-  // Update Badge
   const badge = $('#user-role-badge');
   badge.classList.remove('hidden');
   badge.textContent = currentUserRole.toUpperCase();
@@ -494,7 +517,6 @@ function applyRolePermissions() {
   if (currentUserRole === 'packer') badge.className = 'role-badge bg-green-600 text-white';
   if (currentUserRole === 'support') badge.className = 'role-badge bg-purple-500 text-white';
 
-  // Hide/Show tabs based on data-roles attribute
   $$('.admin-tab').forEach(b => {
     const allowedRoles = b.dataset.roles ? b.dataset.roles.split(',') : [];
     if (allowedRoles.length > 0 && !allowedRoles.includes(currentUserRole)) {
@@ -504,7 +526,6 @@ function applyRolePermissions() {
     }
   });
 
-  // If current active tab is hidden, switch to first visible tab
   const activeTab = $('.admin-tab.active');
   if (activeTab && activeTab.classList.contains('hidden')) {
     const firstVisible = $$('.admin-tab').find(b => !b.classList.contains('hidden'));
@@ -600,19 +621,16 @@ function flash(sel, text, color) {
   el._t = setTimeout(() => el.classList.add('hidden'), 4000);
 }
 
-// PRUDENCE: Only count Realized Revenue (Cash in Hand) for profit calculation
 function orderRevenue(o) { 
   return Number(o.advance_paid || 0) + Number(o.balance_paid || 0); 
 }
 
-// PRUDENCE: Calculate proportional COGS based on Realized Revenue
 function orderCost(o) { 
   const totalOrderValue = (o.items||[]).reduce((a,i)=>a + Number(i.price||0)*Number(i.qty||0), 0);
   if (totalOrderValue === 0) return 0;
   
   const totalCost = (o.items||[]).reduce((a,i) => {
     let cost = 0;
-    // Always look up the CURRENT cost from the Products table to allow editing past data
     if (i.product_id) {
       const prod = DB.products.find(p => Number(p.id) === Number(i.product_id));
       if (prod) cost = Number(prod.cost_price || 0);
@@ -624,7 +642,6 @@ function orderCost(o) {
     return a + (cost * Number(i.qty || 0));
   }, 0);
 
-  // Only recognize the cost proportionally to how much cash we have collected
   const realizedRevenue = Number(o.advance_paid || 0) + Number(o.balance_paid || 0);
   const realizationRatio = Math.min(1, realizedRevenue / totalOrderValue);
   
@@ -710,6 +727,33 @@ async function updateStaffRole(id, newRole) {
 }
 window.updateStaffRole = updateStaffRole;
 
+// NEW: Register Staff Account from Admin Panel
+$('#staff-register-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (currentUserRole !== 'owner') { alert('⛔ Only Owner can create staff accounts.'); return; }
+
+  const email = $('#staff-email').value;
+  const password = $('#staff-password').value;
+  const role = $('#staff-role').value;
+
+  const { data, error } = await supabaseClient.auth.signUp({
+    email: email,
+    password: password,
+    options: { data: { role: role } }
+  });
+
+  if (error) {
+    alert('❌ Error creating account: ' + error.message);
+    return;
+  }
+
+  if (data.user) {
+    alert('✅ Employee account created successfully! You will be logged out now. Log back in as Owner to see them in the Staff list.');
+    await supabaseClient.auth.signOut();
+    location.reload();
+  }
+});
+
 /* ============================================================
    DASHBOARD (UPGRADED V3 - PRUDENCE CONCEPT & UNREALIZED REVENUE)
 ============================================================ */
@@ -718,7 +762,7 @@ function renderDashboard() {
   const visitsToday = DB.visits.filter(v => v.created_at.slice(0,10) === today).length;
   const active = DB.orders.filter(o => o.order_status !== 'cancelled');
   
-  const revenue  = active.reduce((a,o) => a + orderRevenue(o), 0); // Realized Revenue
+  const revenue  = active.reduce((a,o) => a + orderRevenue(o), 0); 
   const cogs     = active.reduce((a,o) => a + orderCost(o), 0);
   const expenses = DB.expenses.reduce((a,e) => a + Number(e.amount||0), 0);
   
@@ -748,7 +792,6 @@ function renderDashboard() {
     <div class="admin-kpi" style="border-left-color:#DC2626"><div class="kpi-value" style="color:#DC2626">${awaitingPay}</div><div class="kpi-label">Awaiting Verify</div></div>
   `;
 
-  // Calculate Unrealized Revenue (Money with TCS / COD)
   const unrealizedRevenue = active.reduce((a,o) => {
     const total = (o.items||[]).reduce((sum,i)=>sum + Number(i.price||0)*Number(i.qty||0), 0);
     const paid = Number(o.advance_paid||0) + Number(o.balance_paid||0);
@@ -816,8 +859,8 @@ function renderProfitChart(activeOrders, expenses) {
   activeOrders.forEach(o => {
     const d = days.find(x => x.key === o.created_at.slice(0,10));
     if (d) {
-      d.revenue += orderRevenue(o); // Uses Prudence Concept Realized Revenue
-      d.cost += orderCost(o);       // Uses Prudence Concept Proportional COGS
+      d.revenue += orderRevenue(o);
+      d.cost += orderCost(o);
     }
   });
 
@@ -1268,7 +1311,6 @@ async function saveOrder(id) {
   const total = Number(o.total || 0);
   const currentBalanceDue = total - currentAdvance - newBalancePaid;
 
-  // PRUDENCE & AUTO-CLEAR: If manually set to delivered & verified, assume full balance was collected
   if (newStatus === 'delivered' && newPayStatus === 'verified' && currentBalanceDue > 0) {
     newBalancePaid += currentBalanceDue;
   }
